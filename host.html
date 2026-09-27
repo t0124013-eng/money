@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>先生用｜アイス屋さん経営ゲーム クラス対戦</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E8F4EF; --panel:#FFFFFF; --ink:#1F2A44; --sub:#56627A; --line:#C9D8D2;
+  --berry:#D93A55; --berry-soft:#FBE3E8; --banana:#F4C542; --banana-soft:#FFF4CF;
+  --mint:#2E9C7A; --mint-soft:#D5EFE5; --receipt:#FFFFFF; --receipt-ink:#2B2B2B;
+  --bar-bg:#1F2A44; --bar-ink:#FFFFFF; --bar-sub:#C9D3E6;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15201D; --panel:#1E2B28; --ink:#EEF3F1; --sub:#A9B8B3; --line:#34463F;
+    --berry:#FF6B82; --berry-soft:#3A2228; --banana:#F4C542; --banana-soft:#3A331C;
+    --mint:#5CCBA6; --mint-soft:#1F3A31; --receipt:#F2F0EA; --receipt-ink:#222;
+    --bar-bg:#0B1311; --bar-ink:#FFFFFF; --bar-sub:#B8C7C2;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15201D; --panel:#1E2B28; --ink:#EEF3F1; --sub:#A9B8B3; --line:#34463F;
+  --berry:#FF6B82; --berry-soft:#3A2228; --banana:#F4C542; --banana-soft:#3A331C;
+  --mint:#5CCBA6; --mint-soft:#1F3A31; --receipt:#F2F0EA; --receipt-ink:#222;
+    --bar-bg:#0B1311; --bar-ink:#FFFFFF; --bar-sub:#B8C7C2;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"BIZ UDPGothic","Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7}
+h1,h2,h3{font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN",sans-serif;line-height:1.35;margin:0}
+button{font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,summary:focus-visible,textarea:focus-visible{outline:3px solid var(--banana);outline-offset:2px}
+.wrap{max-width:880px;margin:0 auto;padding:16px}
+.hidden{display:none!important}
+
+/* status bar */
+.status{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bar-bg);color:var(--bar-ink);border-radius:0 0 18px 18px;padding:12px 20px;box-shadow:0 2px 0 var(--line);display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.status .shop{font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-size:20px;color:var(--bar-ink)}
+.status .stats{display:flex;gap:20px;flex-wrap:wrap;font-size:15px;color:var(--bar-sub)}
+.status b{font-size:22px;font-variant-numeric:tabular-nums;color:var(--bar-ink)}
+.status #stRep{color:var(--banana);letter-spacing:.05em}
+.days{display:flex;gap:4px}
+.days span{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:700;color:var(--bar-ink);background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35)}
+.days span.done{background:var(--mint);border-color:var(--mint);color:#fff}
+.days span.now{background:var(--banana);border-color:var(--banana);color:#1F2A44}
+
+/* start */
+.hero{padding:36px 8px 12px}
+.hero h1{font-size:clamp(30px,7vw,52px);font-weight:900;letter-spacing:.02em}
+.hero p{color:var(--sub);max-width:36em}
+.awning{height:28px;border-radius:14px 14px 0 0;background:repeating-linear-gradient(90deg,var(--berry) 0 36px,#fff 36px 72px);margin-top:24px}
+.panel{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:20px;margin-top:16px}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px}
+.rule{background:var(--bg);border-radius:12px;padding:12px 14px}
+.rule h3{font-size:16px}
+.rule p{margin:4px 0 0;font-size:14px;color:var(--sub)}
+label.name{display:block;font-weight:700;margin-top:16px}
+input[type=text]{width:100%;max-width:360px;padding:10px 12px;border:2px solid var(--line);border-radius:10px;font:inherit;background:var(--panel);color:var(--ink)}
+.btn{border:none;border-radius:999px;padding:14px 28px;font-weight:700;font-size:17px;font-family:"Zen Maru Gothic",sans-serif}
+.btn-main{background:var(--berry);color:#fff}
+.btn-main:disabled{background:var(--line);color:var(--sub);cursor:not-allowed}
+.btn-sub{background:transparent;border:2px solid var(--ink);color:var(--ink)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;align-items:center}
+
+/* day info */
+.dayhead{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:20px}
+.dayhead h2{font-size:28px;font-weight:900}
+.forecast{display:flex;align-items:center;gap:10px;background:var(--panel);border:2px solid var(--line);border-radius:999px;padding:6px 16px 6px 8px}
+.forecast .ic{font-size:28px}
+.news{margin-top:12px;background:var(--banana-soft);border-left:6px solid var(--banana);padding:10px 14px;border-radius:8px;font-weight:700}
+
+/* controls */
+.grid2{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:760px){.grid2{grid-template-columns:3fr 2fr}}
+.ctrl{padding:14px 0;border-bottom:1px dashed var(--line)}
+.ctrl:last-child{border-bottom:none}
+.ctrl-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.ctrl h3{font-size:18px}
+.ctrl .hint{font-size:13px;color:var(--sub);margin:2px 0 8px}
+.val{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;font-family:"Zen Maru Gothic",sans-serif}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper button{width:44px;height:44px;border-radius:50%;border:2px solid var(--ink);background:var(--panel);color:var(--ink);font-size:22px;font-weight:700;flex:none}
+input[type=range]{flex:1;accent-color:var(--berry);height:32px;min-width:0}
+.adopts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.adopts button{border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:10px 6px;font-size:14px;line-height:1.4}
+.adopts button[aria-pressed=true]{border-color:var(--berry);background:var(--berry-soft);font-weight:700}
+
+.plan h3{font-size:18px;margin-bottom:8px}
+.row{display:flex;justify-content:space-between;gap:8px;padding:4px 0;font-variant-numeric:tabular-nums}
+.row.total{border-top:2px solid var(--ink);margin-top:6px;padding-top:8px;font-weight:700}
+.meter{margin-top:14px;background:var(--mint-soft);border-radius:12px;padding:12px 14px}
+.meter strong{font-size:22px;font-family:"Zen Maru Gothic",sans-serif}
+.warn{color:var(--berry);font-weight:700;margin-top:10px}
+details{margin-top:14px;font-size:14px}
+summary{font-weight:700;cursor:pointer}
+dl{margin:8px 0 0}
+dt{font-weight:700;margin-top:6px}
+dd{margin:0;color:var(--sub)}
+
+/* receipt: the one bold element */
+.receipt-stage{display:flex;justify-content:center;padding:24px 0 8px}
+.receipt{width:min(100%,380px);background:var(--receipt);color:var(--receipt-ink);font-family:"DotGothic16","BIZ UDPGothic",monospace;padding:24px 22px 30px;position:relative;box-shadow:0 10px 0 -4px rgba(0,0,0,.08);
+  -webkit-mask:radial-gradient(circle 7px at 10px 100%,#0000 98%,#000) -10px 0/20px 100% repeat-x;
+          mask:radial-gradient(circle 7px at 10px 100%,#0000 98%,#000) -10px 0/20px 100% repeat-x;
+  animation:print .7s ease-out}
+@keyframes print{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
+@media (prefers-reduced-motion:reduce){.receipt{animation:none}}
+.receipt h3{font-family:inherit;text-align:center;font-size:20px;font-weight:400}
+.receipt .c{text-align:center;font-size:13px}
+.receipt hr{border:none;border-top:2px dashed #999;margin:12px 0}
+.receipt .row{font-size:15px;padding:2px 0}
+.receipt .big{font-size:26px;text-align:right}
+.receipt .neg{color:#C3243F}
+.stamp{position:absolute;right:12px;top:12px;transform:rotate(-12deg);border:3px solid;border-radius:8px;padding:0 8px;font-size:16px;background:var(--receipt)}
+.stamp.pos{color:#1D8A67}.stamp.neg{color:#C3243F}
+
+.feedback{margin-top:8px}
+.feedback li{margin:6px 0}
+.customers{display:flex;flex-wrap:wrap;gap:2px 1px;margin-top:10px;font-size:14px;align-items:flex-end}
+.customers svg,.legend svg{width:13px;height:17px;display:block;fill:currentColor}
+.p-sold{color:var(--mint)}.p-lost{color:var(--berry);opacity:.85}
+.c-waste{display:inline-block;width:12px;height:12px;margin:0 1px 2px;background:var(--line);border:1.5px solid var(--sub);border-radius:3px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--sub);margin-top:6px}
+.legend span{display:flex;align-items:center;gap:4px}
+
+/* final */
+.final-top{text-align:center;padding:24px 0 4px}
+.final-top .title{display:inline-block;background:var(--banana);color:#1F2A44;border-radius:999px;padding:4px 18px;font-weight:700;font-family:"Zen Maru Gothic",sans-serif}
+.final-top .money{font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-size:clamp(36px,9vw,60px);font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:620px;font-variant-numeric:tabular-nums;font-size:14px}
+th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:700;color:var(--sub)}
+.chart svg{width:100%;height:auto;display:block}
+.qs ol{padding-left:1.3em}
+.qs li{margin:10px 0}
+.qs textarea{width:100%;min-height:64px;border:2px solid var(--line);border-radius:10px;padding:8px;font:inherit;background:var(--panel);color:var(--ink);margin-top:4px}
+/* touch (iPad) */
+button,.btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;height:40px;touch-action:manipulation}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;margin-top:-11px;border-radius:50%;background:var(--berry);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+input[type=range]::-moz-range-track{height:8px;border-radius:4px;background:var(--line)}
+input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--berry);border:3px solid #fff}
+.stepper button:active,.adopts button:active,.btn:active{transform:scale(.96)}
+
+/* status rules button */
+.status-right{display:flex;align-items:center;gap:12px}
+.rules-btn{background:transparent;color:var(--bar-ink);border:1.5px solid rgba(255,255,255,.5);border-radius:999px;padding:4px 12px;font-size:14px;font-weight:700}
+/* tutorial */
+.tut{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;
+  padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(12px + env(safe-area-inset-bottom,0px))}
+body.tut-open{overflow:hidden}
+.tut-card{width:min(1120px,100%);height:min(720px,100%);background:var(--panel);border:2px solid var(--line);border-radius:22px;display:flex;flex-direction:column;overflow:hidden}
+.tut-top{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line)}
+.tut-steps{display:flex;gap:6px;flex:1}
+.tut-steps span{height:8px;flex:1;max-width:70px;border-radius:4px;background:var(--line)}
+.tut-steps span.on{background:var(--berry)}
+.tut-page{font-size:14px;color:var(--sub);font-variant-numeric:tabular-nums}
+.tut-close{width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:var(--panel);color:var(--ink);font-size:22px;line-height:1}
+.tut-body{flex:1;overflow-y:auto;padding:14px 34px 10px;-webkit-overflow-scrolling:touch}
+.tut-nav{display:flex;justify-content:space-between;gap:12px;padding:12px 20px;border-top:1px solid var(--line)}
+.tut-nav .btn{min-width:150px}
+.slide{display:none}
+.slide.on{display:block;animation:slideIn .35s ease-out}
+@keyframes slideIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.slide.on{animation:none}}
+.slide h2{font-size:clamp(26px,3.4vw,34px);font-weight:900}
+.s-kicker{margin:0;color:var(--berry);font-weight:700;font-size:14px}
+.s-lead{font-size:19px;margin:6px 0 10px}
+.s-h3{font-size:18px;margin:18px 0 8px}
+.s-note{font-size:16px;background:var(--bg);border-radius:12px;padding:10px 14px;margin:14px 0 0}
+.s-note.center{text-align:center}
+.goal{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
+.goal-box{border:2px solid var(--line);border-radius:16px;padding:12px 26px;text-align:center;min-width:220px}
+.goal-box small{display:block;color:var(--sub)}
+.goal-box b{display:block;font-family:"Zen Maru Gothic",sans-serif;font-size:36px;font-weight:900}
+.goal-box span{font-size:14px;color:var(--sub)}
+.goal-box.win{border-color:var(--banana);background:var(--banana-soft)}
+.goal-arrow{font-size:40px;color:var(--sub)}
+.flow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.flow-step{background:var(--bg);border-radius:14px;padding:12px 14px;position:relative}
+.flow-step em{font-style:normal;display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--panel);font-weight:700;margin-right:8px}
+.flow-step b{font-size:18px}
+.flow-step span{display:block;font-size:14px;color:var(--sub);margin-top:4px}
+.eq{display:flex;align-items:stretch;justify-content:center;gap:10px;margin:8px 0 10px;flex-wrap:wrap}
+.eq-box{border-radius:14px;padding:10px 18px;text-align:center;min-width:180px}
+.eq-box small{display:block;font-weight:700;font-size:20px;font-family:"Zen Maru Gothic",sans-serif}
+.eq-box b{font-weight:400;font-size:14px;color:var(--sub)}
+.eq-box.sales{background:var(--mint-soft)}.eq-box.cost{background:var(--berry-soft)}.eq-box.profit{background:var(--banana-soft)}
+.eq-op{font-size:34px;font-weight:700;display:flex;align-items:center}
+.example{border:2px dashed var(--line);border-radius:14px;padding:10px 16px}
+.ex-title{margin:0 0 6px;font-weight:700}
+.ex-grid{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:14px}
+.ex-grid p{margin:0;font-size:15px}
+.ex-h{font-weight:700;color:var(--sub);font-size:13px!important}
+.big-pos{font-size:22px;color:var(--mint)}
+.five{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:10px}
+.five-card{grid-column:span 2;background:var(--bg);border-radius:14px;padding:11px 14px 11px 72px;position:relative;display:flex;flex-direction:column;gap:3px;word-break:keep-all;overflow-wrap:anywhere}
+.five-card:nth-child(4){grid-column:2 / 4}.five-card:nth-child(5){grid-column:4 / 6}
+.five-card i{font-style:normal;font-size:40px;line-height:1;position:absolute;left:18px;top:16px}
+.five-card b{font-family:"Zen Maru Gothic",sans-serif;font-size:20px}
+.five-card p{margin:0;font-weight:700;font-size:15px}
+.five-card span{font-size:14px;color:var(--sub)}
+.thermo-wrap{max-width:720px;margin:8px auto 0}
+.thermo{height:12px;margin-top:8px;border-radius:10px;background:linear-gradient(90deg,#7FB3E8,#9BD4B5 40%,#F4C542 65%,#E8743B 85%,#D93A55)}
+.thermo-lbl{display:flex;justify-content:space-between;text-align:center;margin-top:6px;font-weight:700}
+.thermo-lbl small{font-weight:400;color:var(--sub)}
+.wx{display:flex;justify-content:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.wx div{background:var(--bg);border-radius:14px;padding:8px 20px;display:flex;align-items:center;gap:8px}
+.wx i{font-style:normal;font-size:26px}
+.wx span{color:var(--sub);font-size:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+.two-card{border-radius:16px;padding:14px 16px}
+.two-card h3{font-size:19px;margin-bottom:8px}
+.two-card.waste{background:var(--bg)}
+.two-card.lost{background:var(--berry-soft)}
+.two-card p{margin:8px 0 0;font-size:15px}
+.pic.customers{margin-top:0;gap:3px;min-height:24px}
+.pic.customers svg{width:26px;height:34px}
+.pic .c-waste{width:22px;height:22px;margin-bottom:3px}
+.pic-cap{font-size:13px;color:var(--sub);margin:4px 0 0!important}
+.quiz{border:2px solid var(--line);border-radius:14px;padding:10px 16px;margin-top:10px}
+.qz-q{font-weight:700;margin:0 0 8px;font-size:17px}
+.qz-opts{display:flex;gap:10px;flex-wrap:wrap}
+.qz-opts button{border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:10px 16px;font-size:16px;min-height:48px}
+.qz-opts button.ok{border-color:var(--mint);background:var(--mint-soft);font-weight:700}
+.qz-opts button.ng{border-color:var(--berry);background:var(--berry-soft)}
+.qz-fb{margin:8px 0 0;min-height:1.6em;font-weight:700}
+.qz-fb.ok{color:var(--mint)}.qz-fb.ng{color:var(--berry)}
+@media (max-width:760px){
+  .flow,.ex-grid,.two{grid-template-columns:1fr}
+  .five{grid-template-columns:1fr}
+  .five-card,.five-card:nth-child(4),.five-card:nth-child(5){grid-column:auto}
+  .tut-body{padding:12px 18px}
+}
+.rest-box{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--bg);border-radius:14px;padding:12px 14px!important;margin-top:10px;border-bottom:none!important}
+.rest-box p{margin:0;font-size:14px;flex:1;min-width:220px}
+.btn-rest{min-width:230px;background:var(--panel);color:var(--ink);border:2px solid var(--sub);padding:12px 16px;font-size:16px}
+.btn-rest.armed{border-color:var(--berry);color:var(--berry);background:var(--berry-soft)}
+.stamp.rest{color:#6B7280}
+.rest-title{text-align:center;font-size:22px;margin:10px 0}
+.p-ghost{color:var(--sub);opacity:.4}
+.if-box{background:var(--banana-soft);border-radius:12px;padding:10px 14px;margin-top:10px}
+.modal{position:fixed;inset:0;z-index:60;background:rgba(15,23,32,.55);display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-card{background:var(--panel);color:var(--ink);border-radius:20px;padding:24px 26px;max-width:480px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.modal-card h2{font-size:22px}
+.modal-card p{color:var(--sub);margin:10px 0 18px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.modal-actions .btn{padding:12px 20px;font-size:16px}
+/* tutorial illustrations */
+.s1-top{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:18px;align-items:center}
+.s1-top .goal{justify-content:flex-start}
+.ill-stand{width:100%;height:auto;display:block}
+.eq-ill{width:44px;height:44px;display:block;margin:0 auto 2px}
+.five-card i svg{width:46px;height:46px;display:block}
+.five-card i{top:14px!important;left:16px!important}
+.scenes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:700px;margin:4px auto 0}
+.scenes figure{margin:0;text-align:center}
+.scenes svg{width:100%;height:auto;display:block}
+.scenes figcaption{font-weight:700;margin-top:4px;line-height:1.3}
+.scenes figcaption small{display:block;font-weight:400;color:var(--sub);font-size:13px}
+.thermo-wrap{max-width:760px}
+.two-card{position:relative}
+.two-ill{display:block;width:170px;height:auto;margin:0 auto 6px}
+@media (max-width:760px){.s1-top{grid-template-columns:1fr}.ill-stand{max-width:220px;margin:0 auto}.scenes{grid-template-columns:1fr 1fr 1fr;gap:6px}}
+/* correlation */
+.corr-intro{color:var(--sub);margin:6px 0 8px}
+.corr-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--sub)}
+.corr-legend span{display:flex;align-items:center;gap:6px}
+.corr-legend i{width:14px;height:14px;border-radius:50%;display:inline-block}
+.corr-legend i.dash{width:24px;height:0;border-radius:0;border-top:2.5px dashed var(--berry)}
+.corr-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:12px}
+@media(min-width:760px){.corr-grid{grid-template-columns:1fr 1fr}}
+.corr-card{border:2px solid var(--line);border-radius:14px;padding:12px 14px}
+.corr-card h4{margin:0;font-family:"Zen Maru Gothic",sans-serif;font-size:17px}
+.corr-card svg{width:100%;height:auto;display:block;margin-top:6px}
+.corr-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px}
+.corr-r .badge{font-weight:700;border-radius:999px;padding:2px 12px;font-size:14px;font-variant-numeric:tabular-nums}
+.badge.b-pos{background:var(--mint-soft);color:var(--mint)}
+.badge.b-neg{background:var(--berry-soft);color:var(--berry)}
+.badge.b-none{background:var(--bg);color:var(--sub)}
+.corr-card p{margin:6px 0 0;font-size:14.5px}
+.corr-note{font-size:14px;color:var(--sub);margin:10px 0 0}
+.lesson{margin-top:18px;background:var(--bg);border-radius:16px;padding:16px 18px}
+.lesson h4{margin:0 0 10px;font-family:"Zen Maru Gothic",sans-serif;font-size:19px}
+.lesson-grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:760px){.lesson-grid{grid-template-columns:1fr 1fr}}
+.lesson-card{background:var(--panel);border-radius:12px;padding:12px 14px}
+.lesson-card b{font-size:16px}
+.lesson-card p{margin:6px 0 0;font-size:14.5px}
+.lesson-card.caution{border-left:5px solid var(--banana)}
+.pat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.pat figure{margin:0;text-align:center}
+.pat svg{width:100%;max-width:110px;height:auto}
+.pat figcaption{font-weight:700;font-size:14px;line-height:1.35}
+.pat small{display:block;font-weight:400;color:var(--sub);font-size:12px}
+.think{margin-top:12px;background:var(--banana-soft);border-radius:12px;padding:12px 14px}
+.think ol{margin:6px 0 0;padding-left:1.3em}
+.think li{margin:4px 0;font-size:15px}
+/* modes (TOP) */
+.modes{display:grid;grid-template-columns:1fr;gap:18px;margin-top:18px}
+@media(min-width:760px){.modes{grid-template-columns:1fr 1fr}}
+.mode-card{display:flex;flex-direction:column}
+.mode-card .awning{margin-top:0}
+.awning.alt{background:repeating-linear-gradient(90deg,var(--mint) 0 36px,#fff 36px 72px)}
+.mode-body{flex:1;background:var(--panel);border:2px solid var(--line);border-top:none;border-radius:0 0 18px 18px;padding:18px 20px}
+.mode-body h2{font-size:26px;font-weight:900}
+.mode-tag{margin:0;font-weight:700;color:var(--berry);font-size:14px}
+.battle .mode-tag{color:var(--mint)}
+.mode-desc{color:var(--sub);margin:4px 0 0;font-size:15px}
+.mode-body input[type=text]{max-width:none}
+.join-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:12px}
+.join-grid .name{margin-top:12px}
+#inRoom{font-size:22px;letter-spacing:.2em;font-variant-numeric:tabular-nums}
+.battle .btn-main{background:var(--mint)}
+.join-msg{min-height:1.5em;margin:10px 0 0;font-weight:700;color:var(--berry)}
+.join-msg.ok{color:var(--mint)}
+/* lobby */
+.lobby{max-width:620px;margin:60px auto 0;text-align:center;background:var(--panel);border:2px solid var(--line);border-radius:22px;padding:34px 24px}
+.lobby-ill{font-size:64px;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+@media (prefers-reduced-motion:reduce){.lobby-ill{animation:none}}
+.lobby h2{font-size:28px;font-weight:900}
+.lobby p{color:var(--sub)}
+.lobby-info{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;font-size:18px}
+.lobby-info b{font-size:24px;font-family:"Zen Maru Gothic",sans-serif}
+.conn{font-size:13px;color:var(--sub);min-height:1.4em}
+.room-chip{margin-left:10px;font-size:13px;font-weight:700;background:var(--mint);color:#fff;border-radius:999px;padding:2px 10px;vertical-align:middle}
+.timer{margin-top:8px;display:inline-block;background:var(--ink);color:var(--panel);border-radius:999px;padding:4px 16px;font-weight:700;font-variant-numeric:tabular-nums}
+.timer.low{background:var(--berry);color:#fff}
+.submitted{margin-top:10px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--mint-soft);border:2px solid var(--mint);border-radius:14px;padding:12px 16px}
+.submitted div{flex:1;min-width:240px;display:flex;flex-direction:column}
+.submitted b{font-size:18px;color:var(--mint)}
+.submitted small{color:var(--sub)}
+#scDecide.locked .ctrls,#scDecide.locked .plan .actions,#scDecide.locked .rest-box{opacity:.45;pointer-events:none}
+.wait-note{margin-top:14px;text-align:center;background:var(--banana-soft);border-radius:14px;padding:12px;font-weight:700}
+.rank-chip{display:inline-block;margin:8px 0 4px;background:var(--banana);color:#1F2A44;border-radius:999px;padding:3px 14px;font-weight:700}
+body.battle [data-next]{display:none!important}
+body.battle #btnRetry{display:none}
+.side-next{display:none}
+/* iPad landscape / wide screens */
+@media (min-width:1000px){
+  .wrap{max-width:1180px;padding:12px 24px 24px}
+  .hero{padding:20px 4px 4px}
+  .rules{grid-template-columns:repeat(3,1fr)}
+  /* decide */
+  #scDecide .dayhead{margin-top:10px}
+  .dayhead h2{font-size:26px}
+  .news{margin-top:8px;padding:8px 14px}
+  .grid2{grid-template-columns:minmax(0,1fr) 330px;align-items:start;margin-top:12px}
+  .grid2 .panel{margin-top:0}
+  .ctrls{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));column-gap:26px;padding:14px 22px}
+  .ctrl{border-bottom:none;padding:8px 0}
+  .c-loc{grid-column:span 3;order:1}
+  .c-ad{grid-column:span 3;order:2}
+  .c-price,.c-stock,.c-staff{grid-column:span 2;order:3;border-top:1px dashed var(--line);padding-top:14px;margin-top:6px}
+  .c-ad .hint{display:none}
+  .c-rest{grid-column:1 / -1;order:4}
+  .ctrl .hint{font-size:12.5px;min-height:3.2em;margin-bottom:4px}
+  .c-loc .hint,#hLoc{min-height:2.6em}
+  .val{font-size:24px}
+  .adopts button{padding:12px 4px;font-size:15px}
+  .plan{position:sticky;top:78px;padding:16px 18px}
+  .plan .actions{margin-top:14px}
+  .plan .btn-main{width:100%;padding:16px}
+  /* result */
+  #scResult .dayhead{margin-top:10px}
+  .result-grid{display:grid;grid-template-columns:360px minmax(0,1fr);gap:22px;align-items:start;margin-top:12px}
+  .receipt-stage{padding:0}
+  .receipt{padding:18px 20px 24px}
+  .receipt .row{font-size:14px}
+  .receipt hr{margin:8px 0}
+  .result-panel{margin-top:0}
+  .result-panel .actions{display:none}
+  .side-next{display:flex;margin-top:16px}
+  .side-next .btn-main{width:100%;padding:16px}
+  .result-panel .feedback li{margin:4px 0}
+  /* final */
+  .final-row{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:stretch;margin-top:12px}
+  .final-row .final-top{padding:18px 12px;background:var(--panel);border:2px solid var(--line);border-radius:18px;display:flex;flex-direction:column;justify-content:center}
+  .final-row .panel{margin-top:0}
+  .qs ol{display:grid;grid-template-columns:1fr 1fr;column-gap:24px}
+  .final-row .final-top .title{align-self:center}
+  .chart svg{max-height:300px}
+}
+/* A4 result sheet (captured to PDF / printed) */
+#a4Wrap{position:absolute;left:-9999px;top:0}
+#a4Report{width:794px;height:1123px;box-sizing:border-box;padding:34px 40px 30px;background:#fff;color:#1F2A44;font-family:"BIZ UDPGothic","Hiragino Sans","Yu Gothic",sans-serif;font-size:12px;line-height:1.5;display:flex;flex-direction:column;gap:9px;overflow:hidden}
+#a4Report h3{font-family:"Zen Maru Gothic",sans-serif;font-size:14px;margin:0 0 6px;padding-left:8px;border-left:5px solid #D93A55}
+.rp-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #1F2A44;padding-bottom:8px;gap:12px}
+.rp-kicker{font-size:11px;color:#56627A}
+.rp-shop{font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-size:26px;line-height:1.25}
+.rp-id{font-size:12px;text-align:right;line-height:2;white-space:nowrap}
+.rp-sum{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:8px}
+.rp-box{border:1.5px solid #C9D8D2;border-radius:8px;padding:6px 10px}
+.rp-box small{display:block;color:#56627A;font-size:11px}
+.rp-box b{font-size:17px;font-family:"Zen Maru Gothic",sans-serif}
+.rp-box.main{background:#FBE3E8;border-color:#D93A55}
+.rp-box.main b{font-size:26px}
+.rp-title{display:inline-block;background:#F4C542;border-radius:999px;padding:0 10px;font-weight:700;font-size:12px;margin-left:6px}
+.rp-chart{display:flex;gap:10px;border:1.5px solid #C9D8D2;border-radius:8px;padding:6px 12px}
+.rp-col{flex:1;display:flex;flex-direction:column;align-items:center}
+.rp-up,.rp-dn{height:48px;width:100%;display:flex;flex-direction:column;align-items:center}
+.rp-up{justify-content:flex-end;border-bottom:1.5px solid #56627A}
+.rp-dn{justify-content:flex-start}
+.rp-chart.no-neg .rp-dn{height:6px}
+.rp-chart.no-neg .rp-up{height:62px}
+.rp-up i,.rp-dn i{display:block;width:46%;border-radius:3px}
+.rp-col span{font-size:11px;font-weight:700}
+.rp-lbl{font-size:11px;color:#56627A}
+table.rp-t{width:100%;min-width:0;border-collapse:collapse;font-size:10.5px}
+table.rp-t th,table.rp-t td{border:1px solid #C9D8D2;padding:3px 4px;text-align:right;white-space:nowrap;color:#1F2A44}
+table.rp-t th{background:#E8F4EF;font-weight:700}
+table.rp-t th:first-child,table.rp-t td:first-child{text-align:left}
+table.rp-t tr.rp-total td{font-weight:700;background:#FFF4CF}
+.rp-qs{flex:1;display:flex;flex-direction:column;min-height:0}
+.rp-qs .rp-list{flex:1;display:flex;flex-direction:column;gap:6px;min-height:0}
+.rp-qs .rp-item{flex:1;display:flex;flex-direction:column;min-height:0}
+.rp-q{font-weight:700;font-size:11.5px}
+.rp-ans{flex:1;border:1.5px solid #C9D8D2;border-radius:6px;padding:4px 8px;font-size:11.5px;white-space:pre-wrap;word-break:break-all;overflow:hidden}
+/* auto feedback */
+.fb-type{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:6px 0 12px}
+.fb-type b{font-family:"Zen Maru Gothic",sans-serif;font-size:22px}
+.fb-type span{color:var(--sub)}
+.fb-cols{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:680px){.fb-cols{grid-template-columns:1fr 1fr}}
+.fb-col{border-radius:12px;padding:12px 14px}
+.fb-col.good{background:var(--mint-soft)}
+.fb-col.next{background:var(--banana-soft)}
+.fb-col h4{margin:0 0 4px;font-family:"Zen Maru Gothic",sans-serif;font-size:16px}
+.fb-col ul{margin:0;padding-left:1.2em}
+.fb-col li{margin:6px 0}
+.rp-fb{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rp-fb > div{border-radius:6px;padding:5px 9px;font-size:10.5px;line-height:1.45}
+.rp-fb .g{background:#D5EFE5}.rp-fb .n{background:#FFF4CF}
+.rp-fb b{font-size:11.5px}
+.rp-fb ul{margin:2px 0 0;padding-left:1.1em}
+.rp-type{font-weight:700;font-size:12.5px;margin:0 0 5px}
+.rp-type span{font-weight:400;color:#56627A;font-size:11px;margin-left:6px}
+.pdf-msg{text-align:center;color:var(--sub);font-size:14px;min-height:1.5em}
+@media print{
+  @page{size:A4;margin:0}
+  body{background:#fff}
+  body > *:not(#a4Wrap){display:none!important}
+  #a4Wrap{position:static}
+}
+
+/* ===== host ===== */
+body{background:var(--bg)}
+.hbar{position:sticky;top:0;z-index:5;background:var(--bar-bg);color:var(--bar-ink);display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 22px;flex-wrap:wrap}
+.hbar-l b{font-family:"Zen Maru Gothic",sans-serif;font-size:19px}
+.hbar-sub{margin-left:10px;font-size:13px;color:var(--bar-sub)}
+.hbar-r{display:flex;align-items:center;gap:14px}
+.room-big{background:var(--banana);color:#1F2A44;border-radius:999px;padding:2px 14px;font-weight:900;font-family:"Zen Maru Gothic",sans-serif;font-size:18px;letter-spacing:.08em}
+.hwrap{max-width:1400px}
+.setup{max-width:720px;margin:40px auto 0}
+.setup h1{font-size:30px;font-weight:900}
+.setup .lead{color:var(--sub)}
+.btn.big{font-size:19px;padding:16px 30px}
+.resume{margin-top:16px;background:var(--banana-soft);border-radius:12px;padding:12px 16px}
+.resume p{margin:0 0 8px}
+.open-other{margin-top:16px}
+.row-in{display:flex;gap:10px;margin-top:8px}
+.row-in input{width:140px;font-size:20px;letter-spacing:.15em;padding:8px 12px;border:2px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink)}
+.hmsg{color:var(--berry);font-weight:700;min-height:1.4em}
+.warnbox{background:var(--berry-soft);border-radius:12px;padding:12px 16px;font-weight:700}
+.phase-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-top:14px}
+.phase-tag{margin:0;color:var(--berry);font-weight:700}
+.phase-head h2{font-size:32px;font-weight:900}
+.phase-actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.timer-ctl{display:flex;gap:6px;align-items:center;background:var(--panel);border:2px solid var(--line);border-radius:999px;padding:5px 8px 5px 14px}
+.tlabel{font-size:13px;color:var(--sub);margin-right:4px}
+.chip{border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 12px;font-weight:700}
+.hgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;margin-top:14px;align-items:start}
+@media(max-width:900px){.hgrid{grid-template-columns:1fr}}
+.side{margin-top:0;position:sticky;top:70px}
+.side h3{font-size:17px}
+.teams{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:70vh;overflow:auto}
+.teams li{display:flex;align-items:center;gap:8px;background:var(--bg);border-radius:10px;padding:8px 10px;font-weight:700}
+.teams li .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.teams li .st{font-size:13px;font-weight:700;border-radius:999px;padding:2px 10px}
+.st.ok{background:var(--mint);color:#fff}.st.wait{background:var(--line);color:var(--sub)}.st.rest{background:#6B7280;color:#fff}
+.teams li button{border:none;background:transparent;color:var(--sub);font-size:18px;width:32px;height:32px;border-radius:50%}
+.bigcard{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:22px 26px}
+.join-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+.join-steps div{background:var(--bg);border-radius:14px;padding:14px}
+.join-steps em{font-style:normal;display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--panel);font-weight:700;margin-right:6px}
+.code-huge{font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-size:clamp(64px,10vw,120px);letter-spacing:.12em;line-height:1;text-align:center;margin:10px 0}
+.url{font-size:18px;word-break:break-all;background:var(--bg);border-radius:10px;padding:8px 12px;text-align:center}
+.fc-big{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
+.fc-ic{font-size:clamp(80px,11vw,140px);line-height:1}
+.fc-big .w{font-family:"Zen Maru Gothic",sans-serif;font-size:clamp(34px,5vw,56px);font-weight:900;line-height:1.2}
+.fc-big .t{font-size:clamp(24px,3vw,34px);font-weight:700}
+.news-big{margin-top:14px;background:var(--banana-soft);border-left:8px solid var(--banana);border-radius:10px;padding:12px 16px;font-size:20px;font-weight:700}
+.clock{margin-top:16px;text-align:center;font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-size:clamp(48px,7vw,84px);font-variant-numeric:tabular-nums}
+.clock.low{color:var(--berry)}
+.progress{margin-top:10px;height:14px;border-radius:7px;background:var(--line);overflow:hidden}
+.progress i{display:block;height:100%;background:var(--mint);transition:width .4s}
+.sub-count{margin-top:6px;text-align:center;font-weight:700;font-size:18px}
+.wx-cmp{display:flex;gap:18px;align-items:center;flex-wrap:wrap;font-size:20px}
+.wx-cmp .box{background:var(--bg);border-radius:14px;padding:10px 18px}
+.wx-cmp .box b{font-size:28px;font-family:"Zen Maru Gothic",sans-serif}
+.rank-table{width:100%;border-collapse:collapse;margin-top:14px;font-size:17px;font-variant-numeric:tabular-nums;min-width:0}
+.rank-table th,.rank-table td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.rank-table th{color:var(--sub);font-size:14px}
+.rank-table td.l,.rank-table th.l{text-align:left;white-space:normal}
+.rank-no{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--bg);font-weight:900}
+.r1 .rank-no{background:#F4C542;color:#1F2A44}.r2 .rank-no{background:#C9D3DD;color:#1F2A44}.r3 .rank-no{background:#E3A873;color:#1F2A44}
+.bar{height:12px;border-radius:6px;background:var(--mint);min-width:2px}
+.pos{color:var(--mint);font-weight:700}.neg{color:var(--berry);font-weight:700}
+.plan-s{font-size:13px;color:var(--sub)}
+.podium{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:14px;align-items:end;margin:10px 0 6px}
+.pod{text-align:center;border-radius:16px 16px 0 0;padding:14px 10px}
+.pod .medal{font-size:44px}
+.pod b{display:block;font-family:"Zen Maru Gothic",sans-serif;font-size:24px}
+.pod span{font-size:18px;font-weight:700}
+.pod.p1{background:#FFF1BF;min-height:220px}.pod.p2{background:#E6EBF0;min-height:170px}.pod.p3{background:#F6DFC8;min-height:140px}
+.csv-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.class-note{color:var(--sub);margin:6px 0 0}
+</style>
+</head>
+<body>
+<header class="hbar">
+  <div class="hbar-l"><b>🍦 アイス屋さん経営ゲーム</b><span class="hbar-sub">先生用コントロール画面</span></div>
+  <div class="hbar-r"><span class="room-big hidden" id="hRoomChip"></span><div class="days" id="hDays"></div></div>
+</header>
+<main class="wrap hwrap">
+
+<section id="hSetup">
+  <div class="panel setup">
+    <h1>クラス対戦をはじめる</h1>
+    <div id="hNoConfig" class="hidden">
+      <p class="warnbox">⚠️ まだサーバーの設定（config.js）がされていません。Firebaseの設定を config.js に貼りつけてから、このページを開き直してください。</p>
+    </div>
+    <div id="hSetupMain">
+      <p class="lead">「新しいルームを作る」を押すと4けたのルーム番号ができます。生徒はゲームのTOP画面で「クラス対戦」を選び、その番号を入力して参加します。</p>
+      <div class="actions"><button class="btn btn-main big" id="hCreate">新しいルームを作る</button></div>
+      <div class="resume hidden" id="hResumeBox"><p>前回のルーム <b id="hResumeCode"></b> が残っています。</p><button class="btn btn-sub" id="hResume">このルームを再開する</button></div>
+      <details class="open-other"><summary>ほかのルーム番号を開く</summary>
+        <div class="row-in"><input type="text" id="hOpenCode" inputmode="numeric" maxlength="4" placeholder="1234"><button class="btn btn-sub" id="hOpen">開く</button></div>
+      </details>
+      <p class="hmsg" id="hSetupMsg"></p>
+    </div>
+  </div>
+</section>
+
+<section id="hRoom" class="hidden">
+  <div class="phase-head">
+    <div><p class="phase-tag" id="hPhaseTag"></p><h2 id="hPhaseTitle"></h2></div>
+    <div class="phase-actions">
+      <div class="timer-ctl hidden" id="hTimerCtl">
+        <span class="tlabel">制限時間</span>
+        <button class="chip" data-timer="60">1分</button><button class="chip" data-timer="120">2分</button><button class="chip" data-timer="180">3分</button><button class="chip" data-timer="0">止める</button>
+      </div>
+      <button class="btn btn-main big" id="hPrimary"></button>
+    </div>
+  </div>
+  <div class="hgrid">
+    <div id="hMain"></div>
+    <aside class="panel side">
+      <h3>参加している班 <span id="hCount"></span></h3>
+      <ul class="teams" id="hTeams"></ul>
+    </aside>
+  </div>
+  <p class="hmsg" id="hMsg"></p>
+</section>
+</main>
+
+<div class="modal hidden" id="hModal" role="dialog" aria-modal="true" aria-labelledby="hModalTitle">
+  <div class="modal-card">
+    <h2 id="hModalTitle"></h2>
+    <p id="hModalText"></p>
+    <div class="modal-actions"><button class="btn btn-sub" id="hModalNo">キャンセル</button><button class="btn btn-main" id="hModalYes">OK</button></div>
+  </div>
+</div>
+
+<script>window.FIREBASE_CONFIG=window.FIREBASE_CONFIG||null;</script>
+<script src="config.js"></script>
+<script>
+(function(){
+const START_CASH=50000, RENT=3000, WAGE=6000, STAFF_CAP=50, OWNER_CAP=30, BASE=100, BASE_PRICE=250;
+const WEATHER={
+  '晴れ':{m:1.1,ic:'☀️'}, 'くもり':{m:1.0,ic:'☁️'}, '雨':{m:0.6,ic:'☔'}
+};
+// 全員同じ条件で比べられるよう、天気は固定のシナリオ
+const DAYS=[
+  {fc:'晴れ', fcT:28, act:'晴れ', t:29, ev:1, news:''},
+  {fc:'雨', fcT:20, act:'雨', t:19, ev:1, news:''},
+  {fc:'晴れ', fcT:33, act:'晴れ', t:35, ev:1, news:'🥵 猛暑日になりそう！ 熱中症に注意とニュースで言っている。'},
+  {fc:'くもり', fcT:26, act:'くもり', t:25, ev:1.6, news:'🎆 今夜は近くの河川敷で花火大会！ いつもより人出が多くなりそう。'},
+  {fc:'雨', fcT:26, act:'晴れ', t:30, ev:1, news:''}
+];
+const LOCS=[
+  {name:'繁華街', ic:'🏙️', rent:5000, m:1.3, el:220, rain:0.5, desc:'人通りが多く、高めの値段でも売れやすい。ただし雨の日は人がいなくなる。'},
+  {name:'商店街', ic:'🏪', rent:3000, m:1.0, el:200, rain:1.0, desc:'人通りはふつう。天気の影響もふつう。'},
+  {name:'家の前', ic:'🏠', rent:0, m:0.5, el:160, rain:1.4, desc:'場所代は0円。お客さんは少なく値段にきびしいが、近所の常連さんは雨でも来てくれる。'}
+];
+const ADS=[
+  {cost:0, m:1.0, label:'なし', sub:'0円'},
+  {cost:2000, m:1.25, label:'チラシ', sub:'2,000円'},
+  {cost:5000, m:1.5, label:'SNS広告', sub:'5,000円'}
+];
+const $=id=>document.getElementById(id);
+const yen=n=>(n<0?'−':'')+Math.abs(Math.round(n)).toLocaleString('ja-JP')+'円';
+const unitCost=s=>s>=100?65:80;
+// 気温が上がるほどアイスが欲しくなる（18℃で0.4倍、25℃で約1倍、35℃で約1.8倍）
+const tempF=t=>Math.max(0.2,Math.min(2.0,0.4+(t-18)*0.08));
+
+
+function costOf(d){
+  const mat=d.stock*unitCost(d.stock), staff=d.staff*WAGE, ad=ADS[d.ad].cost, rent=LOCS[d.loc].rent;
+  return {mat,staff,ad,rent,total:mat+staff+rent+ad};
+}
+/*CORE-RUN-START*/
+function runDay(d,di,rep){
+  const day=DAYS[di], w=WEATHER[day.act], L=LOCS[d.loc];
+  const priceF=Math.exp(-(d.price-BASE_PRICE)/L.el);
+  const locF=L.m*(day.act==='雨'?L.rain:1);
+  const demand=Math.max(0,Math.round(BASE*priceF*tempF(day.t)*w.m*day.ev*ADS[d.ad].m*rep*locF));
+  const cap=OWNER_CAP+d.staff*STAFF_CAP;
+  const sold=Math.min(demand,d.stock,cap);
+  const c=costOf(d), revenue=sold*d.price, profit=revenue-c.total;
+  const lost=demand-sold, waste=d.stock-sold;
+  const lostByStock=lost>0 && d.stock<=cap, lostByCap=lost>0 && cap<d.stock;
+  let nrep=rep;
+  if(demand>0 && lost/demand>0.2) nrep=Math.max(0.7,+(rep-0.1).toFixed(2));
+  else if(lost===0 && demand>0) nrep=Math.min(1.2,+(rep+0.05).toFixed(2));
+  const r={day:di+1, weather:day.act, fc:day.fc, t:day.t, fcT:day.fcT, loc:d.loc, price:d.price, stock:d.stock, staff:d.staff, ad:d.ad,
+    demand, sold, lost, waste, revenue, cost:c, profit, lostByStock, lostByCap, repBefore:rep, repAfter:nrep, cap};
+  return {r, delta:profit, rep:nrep};
+}
+function restRecord(d,di,rep,extra){
+  const day=DAYS[di], est=runDay(d,di,rep).r;
+  const r=Object.assign({day:di+1, weather:day.act, fc:day.fc, t:day.t, fcT:day.fcT, closed:true, loc:d.loc,
+    price:0, stock:0, staff:0, ad:0, demand:0, sold:0, lost:0, waste:0, revenue:0,
+    cost:{mat:0,staff:0,ad:0,rent:0,total:0}, profit:0, repBefore:rep, repAfter:rep,
+    ifPlan:{loc:d.loc,price:d.price,stock:d.stock,staff:d.staff,ad:d.ad}, ifDemand:est.demand, ifProfit:est.profit}, extra||{});
+  return {r, delta:0, rep};
+}
+/*CORE-RUN-END*/
+function corr(a,b){
+  const n=a.length, ma=a.reduce((x,y)=>x+y,0)/n, mb=b.reduce((x,y)=>x+y,0)/n;
+  let sab=0,saa=0,sbb=0;
+  for(let i=0;i<n;i++){sab+=(a[i]-ma)*(b[i]-mb);saa+=(a[i]-ma)**2;sbb+=(b[i]-mb)**2;}
+  return (saa&&sbb)?sab/Math.sqrt(saa*sbb):0;
+}
+const WCOL={'晴れ':'#F08A3C','くもり':'#8A97A8','雨':'#4A86C8'};
+function niceTicks(min,max,n){
+  if(min===max){min-=1;max+=1;}
+  const raw=(max-min)/n, mag=Math.pow(10,Math.floor(Math.log10(raw)));
+  const step=[1,2,2.5,5,10].map(m=>m*mag).find(st=>st>=raw);
+  const lo=Math.floor(min/step)*step, hi=Math.ceil(max/step)*step, t=[];
+  for(let v=lo;v<=hi+step/2;v+=step) t.push(+v.toFixed(6));
+  return t;
+}
+function corrLabel(r){
+  const a=Math.abs(r);
+  if(a<0.2) return {txt:'ほとんど相関なし',cls:'b-none',kind:'none'};
+  const st=a>=0.7?'強い':a>=0.4?'中くらいの':'弱い';
+  return r>0?{txt:st+'正の相関',cls:'b-pos',kind:'pos'}:{txt:st+'負の相関',cls:'b-neg',kind:'neg'};
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+/*DB-START*/
+function loadScript(src){return new Promise((res,rej)=>{const t=document.createElement('script');t.src=src;t.onload=res;t.onerror=()=>rej(new Error('load '+src));document.head.appendChild(t);});}
+function makeMockDB(){
+  const KEY='iceMockDB', ch=('BroadcastChannel' in window)?new BroadcastChannel('iceMockDB'):null, subs=[];
+  const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))||{};}catch(e){return {};}};
+  const segs=p=>p.split('/').filter(Boolean);
+  const getAt=(t,p)=>segs(p).reduce((o,k)=>o==null?null:(o[k]===undefined?null:o[k]),t);
+  const setAt=(t,p,v)=>{const ks=segs(p);let o=t;ks.slice(0,-1).forEach(k=>{if(typeof o[k]!=='object'||o[k]===null)o[k]={};o=o[k];});if(v===null||v===undefined)delete o[ks[ks.length-1]];else o[ks[ks.length-1]]=JSON.parse(JSON.stringify(v));};
+  const fire=()=>{const t=load();subs.forEach(s=>s.cb(getAt(t,s.p)));};
+  const commit=t=>{localStorage.setItem(KEY,JSON.stringify(t));fire();if(ch)ch.postMessage(1);};
+  if(ch) ch.onmessage=fire; window.addEventListener('storage',e=>{if(e.key===KEY)fire();});
+  return {
+    on(p,cb){const s={p,cb};subs.push(s);setTimeout(()=>cb(getAt(load(),p)),0);return ()=>{const i=subs.indexOf(s);if(i>=0)subs.splice(i,1);};},
+    get(p){return Promise.resolve(getAt(load(),p));},
+    set(p,v){const t=load();setAt(t,p,v);commit(t);return Promise.resolve();},
+    update(p,obj){const t=load();Object.keys(obj).forEach(k=>setAt(t,p+'/'+k,obj[k]));commit(t);return Promise.resolve();},
+    onConn(cb){cb(true);}, offset(){return 0;}, mock:true
+  };
+}
+async function makeDB(){
+  if(/[?&]mock=1/.test(location.search)) return makeMockDB();
+  const V='10.12.2';
+  await loadScript(`https://www.gstatic.com/firebasejs/${V}/firebase-app-compat.js`);
+  await loadScript(`https://www.gstatic.com/firebasejs/${V}/firebase-database-compat.js`);
+  if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+  const db=firebase.database(); let off=0;
+  db.ref('.info/serverTimeOffset').on('value',s=>{off=s.val()||0;});
+  return {
+    on(p,cb){const r=db.ref(p), h=r.on('value',s=>cb(s.val()));return ()=>r.off('value',h);},
+    get(p){return db.ref(p).get().then(s=>s.val());},
+    set(p,v){return db.ref(p).set(v);},
+    update(p,obj){return db.ref(p).update(obj);},
+    onConn(cb){db.ref('.info/connected').on('value',s=>cb(!!s.val()));},
+    offset(){return off;}
+  };
+}
+/*DB-END*/
+/* ========== HOST ========== */
+const BATTLE_OK = !!(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.databaseURL) || /[?&]mock=1/.test(location.search);
+const H={db:null, room:null, data:null, unsub:null, tick:null};
+const DEF_PLAN={loc:1,price:300,stock:80,staff:1,ad:0};
+function hshow(id){['hSetup','hRoom'].forEach(x=>$(x).classList.toggle('hidden',x!==id));}
+function studentURL(){
+  const base=location.href.split('#')[0].split('?')[0].replace(/host\.html$/,'');
+  return base+(/[?&]mock=1/.test(location.search)?'?mock=1':'');
+}
+function msg(t){$('hMsg').textContent=t||'';}
+function ask(title,text,yes){
+  return new Promise(res=>{
+    $('hModalTitle').textContent=title; $('hModalText').textContent=text; $('hModalYes').textContent=yes||'OK';
+    $('hModal').classList.remove('hidden');
+    const done=v=>{$('hModal').classList.add('hidden');$('hModalYes').onclick=null;$('hModalNo').onclick=null;res(v);};
+    $('hModalYes').onclick=()=>done(true); $('hModalNo').onclick=()=>done(false);
+  });
+}
+async function ensureDB(){ if(!H.db) H.db=await makeDB(); return H.db; }
+
+/* ---------- setup ---------- */
+(function initSetup(){
+  if(!BATTLE_OK){ $('hNoConfig').classList.remove('hidden'); $('hSetupMain').classList.add('hidden'); return; }
+  let last=null; try{last=localStorage.getItem('iceHostRoom');}catch(e){}
+  if(last){ $('hResumeCode').textContent=last; $('hResumeBox').classList.remove('hidden'); }
+})();
+$('hCreate')&&$('hCreate').addEventListener('click',async()=>{
+  $('hCreate').disabled=true; $('hSetupMsg').textContent='作成中…';
+  try{
+    await ensureDB();
+    let code=null;
+    for(let i=0;i<20;i++){ const c=String(Math.floor(1000+Math.random()*9000)); if(!(await H.db.get(`rooms/${c}/state`))){code=c;break;} }
+    if(!code) throw new Error('no code');
+    await H.db.set(`rooms/${code}`,{state:{phase:'lobby',day:0,createdAt:Date.now()}});
+    openRoom(code);
+  }catch(e){ console.error(e); $('hSetupMsg').textContent='サーバーにつながりませんでした。config.jsの設定とネットワークを確かめてください。'; }
+  finally{ $('hCreate').disabled=false; }
+});
+$('hResume')&&$('hResume').addEventListener('click',()=>openRoom($('hResumeCode').textContent));
+$('hOpen')&&$('hOpen').addEventListener('click',async()=>{
+  const c=$('hOpenCode').value.trim(); if(!/^\d{4}$/.test(c)){$('hSetupMsg').textContent='4けたの番号を入れてください。';return;}
+  await ensureDB(); if(!(await H.db.get(`rooms/${c}/state`))){$('hSetupMsg').textContent='そのルームは見つかりません。';return;}
+  openRoom(c);
+});
+async function openRoom(code){
+  await ensureDB();
+  H.room=code; try{localStorage.setItem('iceHostRoom',code);}catch(e){}
+  $('hRoomChip').textContent='ルーム '+code; $('hRoomChip').classList.remove('hidden');
+  if(H.unsub) H.unsub();
+  H.unsub=H.db.on(`rooms/${code}`,v=>{H.data=v||{}; render();});
+  clearInterval(H.tick); H.tick=setInterval(tickClock,500);
+  hshow('hRoom');
+}
+
+/* ---------- helpers ---------- */
+const teamIds=()=>Object.keys((H.data&&H.data.teams)||{}).filter(k=>H.data.teams[k]);
+const tname=id=>escapeHtml(((H.data.teams||{})[id]||{}).name||'?');
+const tstate=id=>((H.data.teamState||{})[id])||{cash:START_CASH,rep:1};
+const planOf=(day,id)=>(((H.data.plans||{})['d'+day])||{})[id]||null;
+const resOf=(day,id)=>(((H.data.results||{})[id])||{})['d'+day]||null;
+function sanitize(p){
+  const cl=(v,a,b,st)=>{v=Math.round((+v||0)/st)*st;return Math.max(a,Math.min(b,v));};
+  return {loc:cl(p.loc,0,2,1),price:cl(p.price,100,600,50),stock:cl(p.stock,0,300,10),staff:cl(p.staff,0,5,1),ad:cl(p.ad,0,2,1)};
+}
+function ranking(){
+  const ids=teamIds().map(id=>({id,cash:tstate(id).cash}));
+  ids.sort((a,b)=>b.cash-a.cash);
+  let rank=0,prev=null; ids.forEach((t,i)=>{if(t.cash!==prev){rank=i+1;prev=t.cash;} t.rank=rank;});
+  return ids;
+}
+function planText(r){
+  if(!r) return '—';
+  if(r.closed) return r.noPlan==='time'?'☂️ 休業（未提出）':r.noPlan==='cash'?'☂️ 休業（資金不足）':r.noPlan==='late'?'☂️ 休業（途中参加）':'☂️ 休業';
+  return `${LOCS[r.loc].ic}${LOCS[r.loc].name}・${r.price}円・仕入${r.stock}・バイト${r.staff}・${ADS[r.ad].label}`;
+}
+
+/* ---------- render ---------- */
+function render(){
+  const st=(H.data&&H.data.state)||{phase:'lobby',day:0};
+  $('hDays').innerHTML=DAYS.map((_,i)=>{const done=(st.phase==='result'||st.phase==='final')?i<=st.day:i<st.day;return `<span class="${done?'done':(i===st.day&&st.phase!=='lobby'&&st.phase!=='final')?'now':''}">${i+1}</span>`;}).join('');
+  renderTeams(st);
+  $('hTimerCtl').classList.toggle('hidden',st.phase!=='decide');
+  const P=$('hPrimary'); P.disabled=false; msg('');
+  if(st.phase==='lobby'){
+    $('hPhaseTag').textContent='準備中'; $('hPhaseTitle').textContent='生徒の参加を待っています';
+    const url=studentURL();
+    $('hMain').innerHTML=`<div class="bigcard"><p style="margin:0;font-weight:700;color:var(--sub)">ルーム番号</p>
+      <div class="code-huge">${H.room}</div>
+      <div class="url">${escapeHtml(url)}</div>
+      <div class="join-steps"><div><em>1</em>上のURLをiPadで開く</div><div><em>2</em>「クラス対戦」の欄に、ルーム番号と班の名前を入れる</div><div><em>3</em>ルール説明とクイズを終えて待つ</div></div></div>`;
+    P.textContent='1日目をスタート'; P.disabled=!teamIds().length; P.onclick=startDay;
+    if(!teamIds().length) msg('1班以上が参加するとスタートできます。');
+  }else if(st.phase==='decide'){
+    const d=DAYS[st.day];
+    $('hPhaseTag').textContent=`${st.day+1}日目｜作戦タイム`; $('hPhaseTitle').textContent='天気予報を見て、作戦を決めよう';
+    const ids=teamIds(), n=ids.filter(id=>planOf(st.day,id)).length;
+    $('hMain').innerHTML=`<div class="bigcard"><div class="fc-big"><div class="fc-ic">${WEATHER[d.fc].ic}</div>
+      <div><div class="plan-s" style="font-size:18px">${st.day+1}日目の天気予報</div><div class="w">${d.fc}</div><div class="t">最高気温 ${d.fcT}℃</div></div></div>
+      ${d.news?`<div class="news-big">${escapeHtml(d.news)}</div>`:''}
+      ${d.fc==='雨'?'<div class="news-big" style="background:var(--bg);border-color:var(--sub)">☔ 雨の予報の日は「お店を休む」も選べます</div>':''}
+      <div class="clock" id="hClock"></div>
+      <div class="progress"><i style="width:${ids.length?n/ids.length*100:0}%"></i></div>
+      <div class="sub-count">作戦を提出した班：${n} / ${ids.length}</div></div>`;
+    P.textContent='締め切って営業開始'; P.onclick=()=>openShop(n,ids.length);
+    tickClock();
+  }else if(st.phase==='result'){
+    const d=DAYS[st.day], last=st.day>=DAYS.length-1;
+    $('hPhaseTag').textContent=`${st.day+1}日目｜結果発表`; $('hPhaseTitle').textContent='今日の結果と現在のランキング';
+    const rk=ranking(), mx=Math.max(1,...rk.map(t=>t.cash));
+    const rows=rk.map(t=>{const r=resOf(st.day,t.id), pr=r?r.profit:0;
+      return `<tr class="r${t.rank}"><td><span class="rank-no">${t.rank}</span></td><td class="l"><b>${tname(t.id)}</b><div class="plan-s">${planText(r)}</div></td>
+      <td>${r&&!r.closed?r.demand+'人':'—'}</td><td class="${pr>0?'pos':pr<0?'neg':''}">${pr>0?'+':''}${yen(pr)}</td><td><b>${yen(t.cash)}</b></td><td style="width:22%"><div class="bar" style="width:${Math.max(0,t.cash)/mx*100}%"></div></td></tr>`;}).join('');
+    $('hMain').innerHTML=`<div class="bigcard"><div class="wx-cmp"><div class="box">予報 ${WEATHER[d.fc].ic} ${d.fc}・${d.fcT}℃</div><div>→</div><div class="box">実際 <b>${WEATHER[d.act].ic} ${d.act}・${d.t}℃</b></div>
+      ${d.fc!==d.act||Math.abs(d.t-d.fcT)>=2?'<div class="neg">予報が外れました！</div>':''}</div>
+      <div class="scroll"><table class="rank-table"><tr><th>順位</th><th class="l">班と今日の作戦</th><th>来客数</th><th>今日の利益</th><th>所持金</th><th></th></tr>${rows}</table></div></div>`;
+    P.textContent=last?'🏆 最終結果を発表':`${st.day+2}日目へ進む`; P.onclick=last?finish:nextDay;
+  }else if(st.phase==='final'){
+    $('hPhaseTag').textContent='最終結果'; $('hPhaseTitle').textContent='5日間の最終ランキング';
+    renderFinalHost();
+    P.textContent='新しいルームを作る'; P.onclick=async()=>{ if(await ask('新しいルームを作りますか？','このルームの結果はこの画面から見られなくなります。必要ならCSVを先にダウンロードしてください。','作る')){ if(H.unsub)H.unsub(); hshow('hSetup'); $('hCreate').click(); } };
+  }
+}
+function renderTeams(st){
+  const ids=teamIds(); $('hCount').textContent=`（${ids.length}班）`;
+  $('hTeams').innerHTML=ids.map(id=>{
+    let badge='';
+    if(st.phase==='decide'){const p=planOf(st.day,id); badge=p?(p.rest?'<span class="st rest">休む</span>':'<span class="st ok">提出済み</span>'):'<span class="st wait">考え中…</span>';}
+    else if(st.phase!=='lobby'){ badge=`<span class="st wait">${yen(tstate(id).cash)}</span>`; }
+    return `<li><span class="nm">${tname(id)}</span>${badge}${st.phase==='lobby'?`<button data-kick="${id}" aria-label="${tname(id)}を外す">×</button>`:''}</li>`;
+  }).join('')||'<li style="font-weight:400;color:var(--sub)">まだ誰も参加していません</li>';
+}
+$('hTeams').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-kick]'); if(!b) return;
+  if(await ask('この班を外しますか？',`「${((H.data.teams||{})[b.dataset.kick]||{}).name||''}」をルームから外します。`,'外す')){
+    await H.db.update(`rooms/${H.room}`,{[`teams/${b.dataset.kick}`]:null,[`teamState/${b.dataset.kick}`]:null});
+  }
+});
+function tickClock(){
+  const el=$('hClock'), st=H.data&&H.data.state; if(!el||!st) return;
+  if(!st.deadline){el.textContent='';return;}
+  const left=Math.max(0,Math.round((st.deadline-(Date.now()+H.db.offset()))/1000));
+  el.textContent=left>0?`⏱ ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`:'⏱ 時間です！';
+  el.classList.toggle('low',left<=15);
+}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-timer]'); if(!t||!H.room) return;
+  const sec=+t.dataset.timer;
+  H.db.set(`rooms/${H.room}/state/deadline`,sec?Date.now()+H.db.offset()+sec*1000:null);
+});
+
+/* ---------- actions ---------- */
+async function startDay(){ await H.db.update(`rooms/${H.room}/state`,{phase:'decide',day:0,deadline:null}); }
+async function nextDay(){ const st=H.data.state; await H.db.update(`rooms/${H.room}/state`,{phase:'decide',day:st.day+1,deadline:null}); }
+async function finish(){ await H.db.update(`rooms/${H.room}/state`,{phase:'final',deadline:null}); }
+async function openShop(n,total){
+  if(n<total && !(await ask('まだ考え中の班があります',`${total-n}班がまだ作戦を提出していません。締め切ると、その班はこの日「休業」になります。営業を開始しますか？`,'営業開始'))) return;
+  $('hPrimary').disabled=true;
+  const data=H.data, day=data.state.day, up={};
+  const newTs={};
+  teamIds().forEach(id=>{
+    let ts=Object.assign({cash:START_CASH,rep:1},(data.teamState||{})[id]||{});
+    for(let k=0;k<day;k++){ if(!resOf(k,id)){ up[`results/${id}/d${k}`]=restRecord(DEF_PLAN,k,ts.rep,{noPlan:'late'}).r; } }
+    const raw=planOf(day,id); let o;
+    if(!raw) o=restRecord(DEF_PLAN,day,ts.rep,{noPlan:'time'});
+    else { const pl=sanitize(raw);
+      if(raw.rest) o=restRecord(pl,day,ts.rep);
+      else if(costOf(pl).total>ts.cash) o=restRecord(pl,day,ts.rep,{noPlan:'cash'});
+      else o=runDay(pl,day,ts.rep); }
+    up[`results/${id}/d${day}`]=o.r;
+    newTs[id]={cash:ts.cash+o.delta, rep:o.rep};
+  });
+  const arr=Object.entries(newTs).sort((a,b)=>b[1].cash-a[1].cash);
+  let rank=0,prev=null; arr.forEach(([id,t],i)=>{ if(t.cash!==prev){rank=i+1;prev=t.cash;} t.rank=rank; t.of=arr.length; up[`teamState/${id}`]=t; });
+  up['state']={phase:'result',day,deadline:null,createdAt:data.state.createdAt||Date.now()};
+  try{ await H.db.update(`rooms/${H.room}`,up); }catch(e){ console.error(e); msg('保存に失敗しました。もう一度押してください。'); $('hPrimary').disabled=false; }
+}
+
+/* ---------- final ---------- */
+function hscatter(pts,xl,yl,fx,fy){
+  const W=520,H2=300,L=64,R=18,T=14,B=46;
+  const xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+  const xt=niceTicks(Math.min(...xs),Math.max(...xs),4), yt=niceTicks(Math.min(0,...ys),Math.max(...ys),4);
+  const x0=xt[0],x1=xt[xt.length-1],y0=yt[0],y1=yt[yt.length-1];
+  const X=v=>L+(v-x0)/(x1-x0)*(W-L-R), Y=v=>H2-B-(v-y0)/(y1-y0)*(H2-T-B);
+  let s=`<svg viewBox="0 0 ${W} ${H2}" role="img" aria-label="${xl}と${yl}の散布図">`;
+  yt.forEach(v=>{s+=`<line x1="${L}" y1="${Y(v)}" x2="${W-R}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L-8}" y="${Y(v)+4}" text-anchor="end" font-size="12" fill="var(--sub)">${fy(v)}</text>`;});
+  xt.forEach(v=>{s+=`<text x="${X(v)}" y="${H2-B+18}" text-anchor="middle" font-size="12" fill="var(--sub)">${fx(v)}</text>`;});
+  s+=`<path d="M${L} ${T}V${H2-B}H${W-R}" stroke="var(--sub)" stroke-width="1.5" fill="none"/>`;
+  s+=`<text x="${(L+W-R)/2}" y="${H2-6}" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">${xl} →</text>`;
+  s+=`<text x="14" y="${(T+H2-B)/2}" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)" transform="rotate(-90 14 ${(T+H2-B)/2})">${yl} →</text>`;
+  const n=pts.length, mx=xs.reduce((a,b)=>a+b,0)/n, my=ys.reduce((a,b)=>a+b,0)/n, sxx=xs.reduce((a,x)=>a+(x-mx)**2,0);
+  if(n>=3&&sxx>0){const b=xs.reduce((a,x,i)=>a+(x-mx)*(ys[i]-my),0)/sxx, a=my-b*mx, cl=v=>Math.max(y0,Math.min(y1,v));
+    s+=`<line x1="${X(x0)}" y1="${Y(cl(a+b*x0))}" x2="${X(x1)}" y2="${Y(cl(a+b*x1))}" stroke="var(--berry)" stroke-width="2.5" stroke-dasharray="7 5"/>`;}
+  pts.forEach(p=>{s+=`<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="7" fill="${WCOL[p.w]}" stroke="#fff" stroke-width="1.5" opacity=".9"/>`;});
+  return s+'</svg>';
+}
+function renderFinalHost(){
+  const rk=ranking(), top=[rk[1],rk[0],rk[2]];
+  const pod=top.map((t,i)=>t?`<div class="pod p${[2,1,3][i]}"><div class="medal">${['🥈','🥇','🥉'][i]}</div><b>${tname(t.id)}</b><span>${yen(t.cash)}</span><div class="plan-s">利益 ${t.cash-START_CASH>=0?'+':''}${yen(t.cash-START_CASH)}</div></div>`:'<div></div>').join('');
+  const rows=rk.map(t=>{const p=t.cash-START_CASH;return `<tr class="r${t.rank}"><td><span class="rank-no">${t.rank}</span></td><td class="l"><b>${tname(t.id)}</b></td><td class="${p>=0?'pos':'neg'}">${p>=0?'+':''}${yen(p)}</td><td><b>${yen(t.cash)}</b></td></tr>`;}).join('');
+  const all=[]; teamIds().forEach(id=>{for(let k=0;k<DAYS.length;k++){const r=resOf(k,id); if(r&&!r.closed) all.push(r);}});
+  const num=v=>Math.round(v).toLocaleString('ja-JP');
+  const defs=[
+    ['気温 × 来客数',r=>r.t,r=>r.demand,'最高気温（℃）','来客数（人）',v=>v+'℃',num],
+    ['気温 × 売上',r=>r.t,r=>r.revenue,'最高気温（℃）','売上（円）',v=>v+'℃',num],
+    ['値段 × 来客数',r=>r.price,r=>r.demand,'値段（円）','来客数（人）',v=>num(v)+'円',num],
+    ['来客数 × 利益',r=>r.demand,r=>r.profit,'来客数（人）','利益（円）',num,num]];
+  const charts=all.length<3?'<p>営業したデータが少ないため、散布図はかけませんでした。</p>':defs.map(([t,fx,fy,xl,yl,ffx,ffy])=>{
+    const pts=all.map(r=>({x:fx(r),y:fy(r),w:r.weather})), xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+    if(Math.max(...xs)===Math.min(...xs)) return `<div class="corr-card"><h4>${t}</h4><p>横軸の値が全員・全日で同じだったので、散布図にできませんでした。</p></div>`;
+    let badge='';
+    {const r=corr(xs,ys),lb=corrLabel(r);badge=`<span class="badge ${lb.cls}">r = ${r.toFixed(2)}</span><span class="badge ${lb.cls}">${lb.txt}</span>`;}
+    return `<div class="corr-card"><h4>${t}</h4>${hscatter(pts,xl,yl,ffx,ffy)}<div class="corr-r">${badge}</div></div>`;}).join('');
+  $('hMain').innerHTML=`<div class="bigcard"><div class="podium">${pod}</div>
+    <div class="scroll"><table class="rank-table"><tr><th>順位</th><th class="l">班</th><th>5日間の利益</th><th>最終所持金</th></tr>${rows}</table></div>
+    <div class="csv-row"><button class="btn btn-sub" id="hCsv">📄 全班のデータをCSVでダウンロード</button><span class="plan-s">Excelやスプレッドシートで分析できます</span></div></div>
+    <div class="bigcard" style="margin-top:16px"><h3 style="font-size:20px">クラス全体のデータで見る散布図（${all.length}点）</h3>
+    <p class="class-note">全班・全日のデータ（休業日をのぞく）を1つにまとめました。1班だけの5点より、ずっとはっきりした傾向が見えるはずです。自分の班のグラフと比べてみよう。</p>
+    <div class="corr-legend" style="margin-top:8px"><span><i style="background:#F08A3C"></i>晴れ</span><span><i style="background:#8A97A8"></i>くもり</span><span><i style="background:#4A86C8"></i>雨</span><span><i class="dash"></i>近似直線</span></div>
+    <div class="corr-grid">${charts}</div></div>`;
+  $('hCsv').onclick=downloadCSV;
+}
+function downloadCSV(){
+  const head=['班','日','予報','予報気温','実際の天気','気温','休業','場所','価格','仕入れ','アルバイト','宣伝','来客数','販売数','売り逃し','売れ残り','売上','費用','利益','所持金'];
+  const lines=[head];
+  teamIds().forEach(id=>{ let cash=START_CASH; for(let k=0;k<DAYS.length;k++){ const r=resOf(k,id); if(!r) continue; cash+=r.profit;
+    lines.push([((H.data.teams||{})[id]||{}).name||'',k+1,r.fc,r.fcT,r.weather,r.t,r.closed?'休業':'',r.closed?'':LOCS[r.loc].name,r.closed?'':r.price,r.stock,r.staff,r.closed?'':ADS[r.ad].label,r.demand,r.sold,r.lost,r.waste,r.revenue,r.cost.total,r.profit,cash]); } });
+  const csv='\ufeff'+lines.map(l=>l.map(v=>{v=String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(',')).join('\r\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download=`アイス屋さん_ルーム${H.room}.csv`; document.body.appendChild(a); a.click(); a.remove();
+}
+
+})();
+</script>
+</body>
+</html>

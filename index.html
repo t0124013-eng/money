@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>アイス屋さん経営ゲーム</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=BIZ+UDPGothic:wght@400;700&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E8F4EF; --panel:#FFFFFF; --ink:#1F2A44; --sub:#56627A; --line:#C9D8D2;
+  --berry:#D93A55; --berry-soft:#FBE3E8; --banana:#F4C542; --banana-soft:#FFF4CF;
+  --mint:#2E9C7A; --mint-soft:#D5EFE5; --receipt:#FFFFFF; --receipt-ink:#2B2B2B;
+  --bar-bg:#1F2A44; --bar-ink:#FFFFFF; --bar-sub:#C9D3E6;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15201D; --panel:#1E2B28; --ink:#EEF3F1; --sub:#A9B8B3; --line:#34463F;
+    --berry:#FF6B82; --berry-soft:#3A2228; --banana:#F4C542; --banana-soft:#3A331C;
+    --mint:#5CCBA6; --mint-soft:#1F3A31; --receipt:#F2F0EA; --receipt-ink:#222;
+    --bar-bg:#0B1311; --bar-ink:#FFFFFF; --bar-sub:#B8C7C2;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15201D; --panel:#1E2B28; --ink:#EEF3F1; --sub:#A9B8B3; --line:#34463F;
+  --berry:#FF6B82; --berry-soft:#3A2228; --banana:#F4C542; --banana-soft:#3A331C;
+  --mint:#5CCBA6; --mint-soft:#1F3A31; --receipt:#F2F0EA; --receipt-ink:#222;
+    --bar-bg:#0B1311; --bar-ink:#FFFFFF; --bar-sub:#B8C7C2;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"BIZ UDPGothic","Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7}
+h1,h2,h3{font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN",sans-serif;line-height:1.35;margin:0}
+button{font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,summary:focus-visible,textarea:focus-visible{outline:3px solid var(--banana);outline-offset:2px}
+.wrap{max-width:880px;margin:0 auto;padding:16px}
+.hidden{display:none!important}
+
+/* status bar */
+.status{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bar-bg);color:var(--bar-ink);border-radius:0 0 18px 18px;padding:12px 20px;box-shadow:0 2px 0 var(--line);display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.status .shop{font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-size:20px;color:var(--bar-ink)}
+.status .stats{display:flex;gap:20px;flex-wrap:wrap;font-size:15px;color:var(--bar-sub)}
+.status b{font-size:22px;font-variant-numeric:tabular-nums;color:var(--bar-ink)}
+.status #stRep{color:var(--banana);letter-spacing:.05em}
+.days{display:flex;gap:4px}
+.days span{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:700;color:var(--bar-ink);background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35)}
+.days span.done{background:var(--mint);border-color:var(--mint);color:#fff}
+.days span.now{background:var(--banana);border-color:var(--banana);color:#1F2A44}
+
+/* start */
+.hero{padding:36px 8px 12px}
+.hero h1{font-size:clamp(30px,7vw,52px);font-weight:900;letter-spacing:.02em}
+.hero p{color:var(--sub);max-width:36em}
+.awning{height:28px;border-radius:14px 14px 0 0;background:repeating-linear-gradient(90deg,var(--berry) 0 36px,#fff 36px 72px);margin-top:24px}
+.panel{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:20px;margin-top:16px}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px}
+.rule{background:var(--bg);border-radius:12px;padding:12px 14px}
+.rule h3{font-size:16px}
+.rule p{margin:4px 0 0;font-size:14px;color:var(--sub)}
+label.name{display:block;font-weight:700;margin-top:16px}
+input[type=text]{width:100%;max-width:360px;padding:10px 12px;border:2px solid var(--line);border-radius:10px;font:inherit;background:var(--panel);color:var(--ink)}
+.btn{border:none;border-radius:999px;padding:14px 28px;font-weight:700;font-size:17px;font-family:"Zen Maru Gothic",sans-serif}
+.btn-main{background:var(--berry);color:#fff}
+.btn-main:disabled{background:var(--line);color:var(--sub);cursor:not-allowed}
+.btn-sub{background:transparent;border:2px solid var(--ink);color:var(--ink)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;align-items:center}
+
+/* day info */
+.dayhead{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:20px}
+.dayhead h2{font-size:28px;font-weight:900}
+.forecast{display:flex;align-items:center;gap:10px;background:var(--panel);border:2px solid var(--line);border-radius:999px;padding:6px 16px 6px 8px}
+.forecast .ic{font-size:28px}
+.news{margin-top:12px;background:var(--banana-soft);border-left:6px solid var(--banana);padding:10px 14px;border-radius:8px;font-weight:700}
+
+/* controls */
+.grid2{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:760px){.grid2{grid-template-columns:3fr 2fr}}
+.ctrl{padding:14px 0;border-bottom:1px dashed var(--line)}
+.ctrl:last-child{border-bottom:none}
+.ctrl-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.ctrl h3{font-size:18px}
+.ctrl .hint{font-size:13px;color:var(--sub);margin:2px 0 8px}
+.val{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;font-family:"Zen Maru Gothic",sans-serif}
+.stepper{display:flex;align-items:center;gap:10px}
+.stepper button{width:44px;height:44px;border-radius:50%;border:2px solid var(--ink);background:var(--panel);color:var(--ink);font-size:22px;font-weight:700;flex:none}
+input[type=range]{flex:1;accent-color:var(--berry);height:32px;min-width:0}
+.adopts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.adopts button{border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:10px 6px;font-size:14px;line-height:1.4}
+.adopts button[aria-pressed=true]{border-color:var(--berry);background:var(--berry-soft);font-weight:700}
+
+.plan h3{font-size:18px;margin-bottom:8px}
+.row{display:flex;justify-content:space-between;gap:8px;padding:4px 0;font-variant-numeric:tabular-nums}
+.row.total{border-top:2px solid var(--ink);margin-top:6px;padding-top:8px;font-weight:700}
+.meter{margin-top:14px;background:var(--mint-soft);border-radius:12px;padding:12px 14px}
+.meter strong{font-size:22px;font-family:"Zen Maru Gothic",sans-serif}
+.warn{color:var(--berry);font-weight:700;margin-top:10px}
+details{margin-top:14px;font-size:14px}
+summary{font-weight:700;cursor:pointer}
+dl{margin:8px 0 0}
+dt{font-weight:700;margin-top:6px}
+dd{margin:0;color:var(--sub)}
+
+/* receipt: the one bold element */
+.receipt-stage{display:flex;justify-content:center;padding:24px 0 8px}
+.receipt{width:min(100%,380px);background:var(--receipt);color:var(--receipt-ink);font-family:"DotGothic16","BIZ UDPGothic",monospace;padding:24px 22px 30px;position:relative;box-shadow:0 10px 0 -4px rgba(0,0,0,.08);
+  -webkit-mask:radial-gradient(circle 7px at 10px 100%,#0000 98%,#000) -10px 0/20px 100% repeat-x;
+          mask:radial-gradient(circle 7px at 10px 100%,#0000 98%,#000) -10px 0/20px 100% repeat-x;
+  animation:print .7s ease-out}
+@keyframes print{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
+@media (prefers-reduced-motion:reduce){.receipt{animation:none}}
+.receipt h3{font-family:inherit;text-align:center;font-size:20px;font-weight:400}
+.receipt .c{text-align:center;font-size:13px}
+.receipt hr{border:none;border-top:2px dashed #999;margin:12px 0}
+.receipt .row{font-size:15px;padding:2px 0}
+.receipt .big{font-size:26px;text-align:right}
+.receipt .neg{color:#C3243F}
+.stamp{position:absolute;right:12px;top:12px;transform:rotate(-12deg);border:3px solid;border-radius:8px;padding:0 8px;font-size:16px;background:var(--receipt)}
+.stamp.pos{color:#1D8A67}.stamp.neg{color:#C3243F}
+
+.feedback{margin-top:8px}
+.feedback li{margin:6px 0}
+.customers{display:flex;flex-wrap:wrap;gap:2px 1px;margin-top:10px;font-size:14px;align-items:flex-end}
+.customers svg,.legend svg{width:13px;height:17px;display:block;fill:currentColor}
+.p-sold{color:var(--mint)}.p-lost{color:var(--berry);opacity:.85}
+.c-waste{display:inline-block;width:12px;height:12px;margin:0 1px 2px;background:var(--line);border:1.5px solid var(--sub);border-radius:3px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--sub);margin-top:6px}
+.legend span{display:flex;align-items:center;gap:4px}
+
+/* final */
+.final-top{text-align:center;padding:24px 0 4px}
+.final-top .title{display:inline-block;background:var(--banana);color:#1F2A44;border-radius:999px;padding:4px 18px;font-weight:700;font-family:"Zen Maru Gothic",sans-serif}
+.final-top .money{font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-size:clamp(36px,9vw,60px);font-variant-numeric:tabular-nums}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:620px;font-variant-numeric:tabular-nums;font-size:14px}
+th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:700;color:var(--sub)}
+.chart svg{width:100%;height:auto;display:block}
+.qs ol{padding-left:1.3em}
+.qs li{margin:10px 0}
+.qs textarea{width:100%;min-height:64px;border:2px solid var(--line);border-radius:10px;padding:8px;font:inherit;background:var(--panel);color:var(--ink);margin-top:4px}
+/* touch (iPad) */
+button,.btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;height:40px;touch-action:manipulation}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;margin-top:-11px;border-radius:50%;background:var(--berry);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+input[type=range]::-moz-range-track{height:8px;border-radius:4px;background:var(--line)}
+input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--berry);border:3px solid #fff}
+.stepper button:active,.adopts button:active,.btn:active{transform:scale(.96)}
+
+/* status rules button */
+.status-right{display:flex;align-items:center;gap:12px}
+.rules-btn{background:transparent;color:var(--bar-ink);border:1.5px solid rgba(255,255,255,.5);border-radius:999px;padding:4px 12px;font-size:14px;font-weight:700}
+/* tutorial */
+.tut{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;
+  padding:calc(12px + env(safe-area-inset-top,0px)) 16px calc(12px + env(safe-area-inset-bottom,0px))}
+body.tut-open{overflow:hidden}
+.tut-card{width:min(1120px,100%);height:min(720px,100%);background:var(--panel);border:2px solid var(--line);border-radius:22px;display:flex;flex-direction:column;overflow:hidden}
+.tut-top{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line)}
+.tut-steps{display:flex;gap:6px;flex:1}
+.tut-steps span{height:8px;flex:1;max-width:70px;border-radius:4px;background:var(--line)}
+.tut-steps span.on{background:var(--berry)}
+.tut-page{font-size:14px;color:var(--sub);font-variant-numeric:tabular-nums}
+.tut-close{width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:var(--panel);color:var(--ink);font-size:22px;line-height:1}
+.tut-body{flex:1;overflow-y:auto;padding:14px 34px 10px;-webkit-overflow-scrolling:touch}
+.tut-nav{display:flex;justify-content:space-between;gap:12px;padding:12px 20px;border-top:1px solid var(--line)}
+.tut-nav .btn{min-width:150px}
+.slide{display:none}
+.slide.on{display:block;animation:slideIn .35s ease-out}
+@keyframes slideIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.slide.on{animation:none}}
+.slide h2{font-size:clamp(26px,3.4vw,34px);font-weight:900}
+.s-kicker{margin:0;color:var(--berry);font-weight:700;font-size:14px}
+.s-lead{font-size:19px;margin:6px 0 10px}
+.s-h3{font-size:18px;margin:18px 0 8px}
+.s-note{font-size:16px;background:var(--bg);border-radius:12px;padding:10px 14px;margin:14px 0 0}
+.s-note.center{text-align:center}
+.goal{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
+.goal-box{border:2px solid var(--line);border-radius:16px;padding:12px 26px;text-align:center;min-width:220px}
+.goal-box small{display:block;color:var(--sub)}
+.goal-box b{display:block;font-family:"Zen Maru Gothic",sans-serif;font-size:36px;font-weight:900}
+.goal-box span{font-size:14px;color:var(--sub)}
+.goal-box.win{border-color:var(--banana);background:var(--banana-soft)}
+.goal-arrow{font-size:40px;color:var(--sub)}
+.flow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.flow-step{background:var(--bg);border-radius:14px;padding:12px 14px;position:relative}
+.flow-step em{font-style:normal;display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--panel);font-weight:700;margin-right:8px}
+.flow-step b{font-size:18px}
+.flow-step span{display:block;font-size:14px;color:var(--sub);margin-top:4px}
+.eq{display:flex;align-items:stretch;justify-content:center;gap:10px;margin:8px 0 10px;flex-wrap:wrap}
+.eq-box{border-radius:14px;padding:10px 18px;text-align:center;min-width:180px}
+.eq-box small{display:block;font-weight:700;font-size:20px;font-family:"Zen Maru Gothic",sans-serif}
+.eq-box b{font-weight:400;font-size:14px;color:var(--sub)}
+.eq-box.sales{background:var(--mint-soft)}.eq-box.cost{background:var(--berry-soft)}.eq-box.profit{background:var(--banana-soft)}
+.eq-op{font-size:34px;font-weight:700;display:flex;align-items:center}
+.example{border:2px dashed var(--line);border-radius:14px;padding:10px 16px}
+.ex-title{margin:0 0 6px;font-weight:700}
+.ex-grid{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:14px}
+.ex-grid p{margin:0;font-size:15px}
+.ex-h{font-weight:700;color:var(--sub);font-size:13px!important}
+.big-pos{font-size:22px;color:var(--mint)}
+.five{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:10px}
+.five-card{grid-column:span 2;background:var(--bg);border-radius:14px;padding:11px 14px 11px 72px;position:relative;display:flex;flex-direction:column;gap:3px;word-break:keep-all;overflow-wrap:anywhere}
+.five-card:nth-child(4){grid-column:2 / 4}.five-card:nth-child(5){grid-column:4 / 6}
+.five-card i{font-style:normal;font-size:40px;line-height:1;position:absolute;left:18px;top:16px}
+.five-card b{font-family:"Zen Maru Gothic",sans-serif;font-size:20px}
+.five-card p{margin:0;font-weight:700;font-size:15px}
+.five-card span{font-size:14px;color:var(--sub)}
+.thermo-wrap{max-width:720px;margin:8px auto 0}
+.thermo{height:12px;margin-top:8px;border-radius:10px;background:linear-gradient(90deg,#7FB3E8,#9BD4B5 40%,#F4C542 65%,#E8743B 85%,#D93A55)}
+.thermo-lbl{display:flex;justify-content:space-between;text-align:center;margin-top:6px;font-weight:700}
+.thermo-lbl small{font-weight:400;color:var(--sub)}
+.wx{display:flex;justify-content:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.wx div{background:var(--bg);border-radius:14px;padding:8px 20px;display:flex;align-items:center;gap:8px}
+.wx i{font-style:normal;font-size:26px}
+.wx span{color:var(--sub);font-size:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+.two-card{border-radius:16px;padding:14px 16px}
+.two-card h3{font-size:19px;margin-bottom:8px}
+.two-card.waste{background:var(--bg)}
+.two-card.lost{background:var(--berry-soft)}
+.two-card p{margin:8px 0 0;font-size:15px}
+.pic.customers{margin-top:0;gap:3px;min-height:24px}
+.pic.customers svg{width:26px;height:34px}
+.pic .c-waste{width:22px;height:22px;margin-bottom:3px}
+.pic-cap{font-size:13px;color:var(--sub);margin:4px 0 0!important}
+.quiz{border:2px solid var(--line);border-radius:14px;padding:10px 16px;margin-top:10px}
+.qz-q{font-weight:700;margin:0 0 8px;font-size:17px}
+.qz-opts{display:flex;gap:10px;flex-wrap:wrap}
+.qz-opts button{border:2px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:10px 16px;font-size:16px;min-height:48px}
+.qz-opts button.ok{border-color:var(--mint);background:var(--mint-soft);font-weight:700}
+.qz-opts button.ng{border-color:var(--berry);background:var(--berry-soft)}
+.qz-fb{margin:8px 0 0;min-height:1.6em;font-weight:700}
+.qz-fb.ok{color:var(--mint)}.qz-fb.ng{color:var(--berry)}
+@media (max-width:760px){
+  .flow,.ex-grid,.two{grid-template-columns:1fr}
+  .five{grid-template-columns:1fr}
+  .five-card,.five-card:nth-child(4),.five-card:nth-child(5){grid-column:auto}
+  .tut-body{padding:12px 18px}
+}
+.rest-box{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--bg);border-radius:14px;padding:12px 14px!important;margin-top:10px;border-bottom:none!important}
+.rest-box p{margin:0;font-size:14px;flex:1;min-width:220px}
+.btn-rest{min-width:230px;background:var(--panel);color:var(--ink);border:2px solid var(--sub);padding:12px 16px;font-size:16px}
+.btn-rest.armed{border-color:var(--berry);color:var(--berry);background:var(--berry-soft)}
+.stamp.rest{color:#6B7280}
+.rest-title{text-align:center;font-size:22px;margin:10px 0}
+.p-ghost{color:var(--sub);opacity:.4}
+.if-box{background:var(--banana-soft);border-radius:12px;padding:10px 14px;margin-top:10px}
+.modal{position:fixed;inset:0;z-index:60;background:rgba(15,23,32,.55);display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-card{background:var(--panel);color:var(--ink);border-radius:20px;padding:24px 26px;max-width:480px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.modal-card h2{font-size:22px}
+.modal-card p{color:var(--sub);margin:10px 0 18px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.modal-actions .btn{padding:12px 20px;font-size:16px}
+/* tutorial illustrations */
+.s1-top{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:18px;align-items:center}
+.s1-top .goal{justify-content:flex-start}
+.ill-stand{width:100%;height:auto;display:block}
+.eq-ill{width:44px;height:44px;display:block;margin:0 auto 2px}
+.five-card i svg{width:46px;height:46px;display:block}
+.five-card i{top:14px!important;left:16px!important}
+.scenes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:700px;margin:4px auto 0}
+.scenes figure{margin:0;text-align:center}
+.scenes svg{width:100%;height:auto;display:block}
+.scenes figcaption{font-weight:700;margin-top:4px;line-height:1.3}
+.scenes figcaption small{display:block;font-weight:400;color:var(--sub);font-size:13px}
+.thermo-wrap{max-width:760px}
+.two-card{position:relative}
+.two-ill{display:block;width:170px;height:auto;margin:0 auto 6px}
+@media (max-width:760px){.s1-top{grid-template-columns:1fr}.ill-stand{max-width:220px;margin:0 auto}.scenes{grid-template-columns:1fr 1fr 1fr;gap:6px}}
+/* correlation */
+.corr-intro{color:var(--sub);margin:6px 0 8px}
+.corr-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--sub)}
+.corr-legend span{display:flex;align-items:center;gap:6px}
+.corr-legend i{width:14px;height:14px;border-radius:50%;display:inline-block}
+.corr-legend i.dash{width:24px;height:0;border-radius:0;border-top:2.5px dashed var(--berry)}
+.corr-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:12px}
+@media(min-width:760px){.corr-grid{grid-template-columns:1fr 1fr}}
+.corr-card{border:2px solid var(--line);border-radius:14px;padding:12px 14px}
+.corr-card h4{margin:0;font-family:"Zen Maru Gothic",sans-serif;font-size:17px}
+.corr-card svg{width:100%;height:auto;display:block;margin-top:6px}
+.corr-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px}
+.corr-r .badge{font-weight:700;border-radius:999px;padding:2px 12px;font-size:14px;font-variant-numeric:tabular-nums}
+.badge.b-pos{background:var(--mint-soft);color:var(--mint)}
+.badge.b-neg{background:var(--berry-soft);color:var(--berry)}
+.badge.b-none{background:var(--bg);color:var(--sub)}
+.corr-card p{margin:6px 0 0;font-size:14.5px}
+.corr-note{font-size:14px;color:var(--sub);margin:10px 0 0}
+.lesson{margin-top:18px;background:var(--bg);border-radius:16px;padding:16px 18px}
+.lesson h4{margin:0 0 10px;font-family:"Zen Maru Gothic",sans-serif;font-size:19px}
+.lesson-grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:760px){.lesson-grid{grid-template-columns:1fr 1fr}}
+.lesson-card{background:var(--panel);border-radius:12px;padding:12px 14px}
+.lesson-card b{font-size:16px}
+.lesson-card p{margin:6px 0 0;font-size:14.5px}
+.lesson-card.caution{border-left:5px solid var(--banana)}
+.pat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.pat figure{margin:0;text-align:center}
+.pat svg{width:100%;max-width:110px;height:auto}
+.pat figcaption{font-weight:700;font-size:14px;line-height:1.35}
+.pat small{display:block;font-weight:400;color:var(--sub);font-size:12px}
+.think{margin-top:12px;background:var(--banana-soft);border-radius:12px;padding:12px 14px}
+.think ol{margin:6px 0 0;padding-left:1.3em}
+.think li{margin:4px 0;font-size:15px}
+/* modes (TOP) */
+.modes{display:grid;grid-template-columns:1fr;gap:18px;margin-top:18px}
+@media(min-width:760px){.modes{grid-template-columns:1fr 1fr}}
+.mode-card{display:flex;flex-direction:column}
+.mode-card .awning{margin-top:0}
+.awning.alt{background:repeating-linear-gradient(90deg,var(--mint) 0 36px,#fff 36px 72px)}
+.mode-body{flex:1;background:var(--panel);border:2px solid var(--line);border-top:none;border-radius:0 0 18px 18px;padding:18px 20px}
+.mode-body h2{font-size:26px;font-weight:900}
+.mode-tag{margin:0;font-weight:700;color:var(--berry);font-size:14px}
+.battle .mode-tag{color:var(--mint)}
+.mode-desc{color:var(--sub);margin:4px 0 0;font-size:15px}
+.mode-body input[type=text]{max-width:none}
+.join-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:12px}
+.join-grid .name{margin-top:12px}
+#inRoom{font-size:22px;letter-spacing:.2em;font-variant-numeric:tabular-nums}
+.battle .btn-main{background:var(--mint)}
+.battle .btn-main:disabled{background:var(--line);color:var(--sub)}
+.join-msg{min-height:1.5em;margin:10px 0 0;font-weight:700;color:var(--berry)}
+.join-msg.ok{color:var(--mint)}
+/* lobby */
+.lobby{max-width:620px;margin:60px auto 0;text-align:center;background:var(--panel);border:2px solid var(--line);border-radius:22px;padding:34px 24px}
+.lobby-ill{font-size:64px;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px)}}
+@media (prefers-reduced-motion:reduce){.lobby-ill{animation:none}}
+.lobby h2{font-size:28px;font-weight:900}
+.lobby p{color:var(--sub)}
+.lobby-info{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;font-size:18px}
+.lobby-info b{font-size:24px;font-family:"Zen Maru Gothic",sans-serif}
+.conn{font-size:13px;color:var(--sub);min-height:1.4em}
+.room-chip{margin-left:10px;font-size:13px;font-weight:700;background:var(--mint);color:#fff;border-radius:999px;padding:2px 10px;vertical-align:middle}
+.timer{margin-top:8px;display:inline-block;background:var(--ink);color:var(--panel);border-radius:999px;padding:4px 16px;font-weight:700;font-variant-numeric:tabular-nums}
+.timer.low{background:var(--berry);color:#fff}
+.submitted{margin-top:10px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--mint-soft);border:2px solid var(--mint);border-radius:14px;padding:12px 16px}
+.submitted div{flex:1;min-width:240px;display:flex;flex-direction:column}
+.submitted b{font-size:18px;color:var(--mint)}
+.submitted small{color:var(--sub)}
+#scDecide.locked .ctrls,#scDecide.locked .plan .actions,#scDecide.locked .rest-box{opacity:.45;pointer-events:none}
+.wait-note{margin-top:14px;text-align:center;background:var(--banana-soft);border-radius:14px;padding:12px;font-weight:700}
+.rank-chip{display:inline-block;margin:8px 0 4px;background:var(--banana);color:#1F2A44;border-radius:999px;padding:3px 14px;font-weight:700}
+body.battle [data-next]{display:none!important}
+body.battle #btnRetry{display:none}
+.side-next{display:none}
+/* iPad landscape / wide screens */
+@media (min-width:1000px){
+  .wrap{max-width:1180px;padding:12px 24px 24px}
+  .hero{padding:20px 4px 4px}
+  .rules{grid-template-columns:repeat(3,1fr)}
+  /* decide */
+  #scDecide .dayhead{margin-top:10px}
+  .dayhead h2{font-size:26px}
+  .news{margin-top:8px;padding:8px 14px}
+  .grid2{grid-template-columns:minmax(0,1fr) 330px;align-items:start;margin-top:12px}
+  .grid2 .panel{margin-top:0}
+  .ctrls{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));column-gap:26px;padding:14px 22px}
+  .ctrl{border-bottom:none;padding:8px 0}
+  .c-loc{grid-column:span 3;order:1}
+  .c-ad{grid-column:span 3;order:2}
+  .c-price,.c-stock,.c-staff{grid-column:span 2;order:3;border-top:1px dashed var(--line);padding-top:14px;margin-top:6px}
+  .c-ad .hint{display:none}
+  .c-rest{grid-column:1 / -1;order:4}
+  .ctrl .hint{font-size:12.5px;min-height:3.2em;margin-bottom:4px}
+  .c-loc .hint,#hLoc{min-height:2.6em}
+  .val{font-size:24px}
+  .adopts button{padding:12px 4px;font-size:15px}
+  .plan{position:sticky;top:78px;padding:16px 18px}
+  .plan .actions{margin-top:14px}
+  .plan .btn-main{width:100%;padding:16px}
+  /* result */
+  #scResult .dayhead{margin-top:10px}
+  .result-grid{display:grid;grid-template-columns:360px minmax(0,1fr);gap:22px;align-items:start;margin-top:12px}
+  .receipt-stage{padding:0}
+  .receipt{padding:18px 20px 24px}
+  .receipt .row{font-size:14px}
+  .receipt hr{margin:8px 0}
+  .result-panel{margin-top:0}
+  .result-panel .actions{display:none}
+  .side-next{display:flex;margin-top:16px}
+  .side-next .btn-main{width:100%;padding:16px}
+  .result-panel .feedback li{margin:4px 0}
+  /* final */
+  .final-row{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:stretch;margin-top:12px}
+  .final-row .final-top{padding:18px 12px;background:var(--panel);border:2px solid var(--line);border-radius:18px;display:flex;flex-direction:column;justify-content:center}
+  .final-row .panel{margin-top:0}
+  .qs ol{display:grid;grid-template-columns:1fr 1fr;column-gap:24px}
+  .final-row .final-top .title{align-self:center}
+  .chart svg{max-height:300px}
+}
+/* A4 result sheet (captured to PDF / printed) */
+#a4Wrap{position:absolute;left:-9999px;top:0}
+#a4Report{width:794px;height:1123px;box-sizing:border-box;padding:34px 40px 30px;background:#fff;color:#1F2A44;font-family:"BIZ UDPGothic","Hiragino Sans","Yu Gothic",sans-serif;font-size:12px;line-height:1.5;display:flex;flex-direction:column;gap:9px;overflow:hidden}
+#a4Report h3{font-family:"Zen Maru Gothic",sans-serif;font-size:14px;margin:0 0 6px;padding-left:8px;border-left:5px solid #D93A55}
+.rp-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #1F2A44;padding-bottom:8px;gap:12px}
+.rp-kicker{font-size:11px;color:#56627A}
+.rp-shop{font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-size:26px;line-height:1.25}
+.rp-id{font-size:12px;text-align:right;line-height:2;white-space:nowrap}
+.rp-sum{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:8px}
+.rp-box{border:1.5px solid #C9D8D2;border-radius:8px;padding:6px 10px}
+.rp-box small{display:block;color:#56627A;font-size:11px}
+.rp-box b{font-size:17px;font-family:"Zen Maru Gothic",sans-serif}
+.rp-box.main{background:#FBE3E8;border-color:#D93A55}
+.rp-box.main b{font-size:26px}
+.rp-title{display:inline-block;background:#F4C542;border-radius:999px;padding:0 10px;font-weight:700;font-size:12px;margin-left:6px}
+.rp-chart{display:flex;gap:10px;border:1.5px solid #C9D8D2;border-radius:8px;padding:6px 12px}
+.rp-col{flex:1;display:flex;flex-direction:column;align-items:center}
+.rp-up,.rp-dn{height:48px;width:100%;display:flex;flex-direction:column;align-items:center}
+.rp-up{justify-content:flex-end;border-bottom:1.5px solid #56627A}
+.rp-dn{justify-content:flex-start}
+.rp-chart.no-neg .rp-dn{height:6px}
+.rp-chart.no-neg .rp-up{height:62px}
+.rp-up i,.rp-dn i{display:block;width:46%;border-radius:3px}
+.rp-col span{font-size:11px;font-weight:700}
+.rp-lbl{font-size:11px;color:#56627A}
+table.rp-t{width:100%;min-width:0;border-collapse:collapse;font-size:10.5px}
+table.rp-t th,table.rp-t td{border:1px solid #C9D8D2;padding:3px 4px;text-align:right;white-space:nowrap;color:#1F2A44}
+table.rp-t th{background:#E8F4EF;font-weight:700}
+table.rp-t th:first-child,table.rp-t td:first-child{text-align:left}
+table.rp-t tr.rp-total td{font-weight:700;background:#FFF4CF}
+.rp-qs{flex:1;display:flex;flex-direction:column;min-height:0}
+.rp-qs .rp-list{flex:1;display:flex;flex-direction:column;gap:6px;min-height:0}
+.rp-qs .rp-item{flex:1;display:flex;flex-direction:column;min-height:0}
+.rp-q{font-weight:700;font-size:11.5px}
+.rp-ans{flex:1;border:1.5px solid #C9D8D2;border-radius:6px;padding:4px 8px;font-size:11.5px;white-space:pre-wrap;word-break:break-all;overflow:hidden}
+/* auto feedback */
+.fb-type{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:6px 0 12px}
+.fb-type b{font-family:"Zen Maru Gothic",sans-serif;font-size:22px}
+.fb-type span{color:var(--sub)}
+.fb-cols{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:680px){.fb-cols{grid-template-columns:1fr 1fr}}
+.fb-col{border-radius:12px;padding:12px 14px}
+.fb-col.good{background:var(--mint-soft)}
+.fb-col.next{background:var(--banana-soft)}
+.fb-col h4{margin:0 0 4px;font-family:"Zen Maru Gothic",sans-serif;font-size:16px}
+.fb-col ul{margin:0;padding-left:1.2em}
+.fb-col li{margin:6px 0}
+.rp-fb{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rp-fb > div{border-radius:6px;padding:5px 9px;font-size:10.5px;line-height:1.45}
+.rp-fb .g{background:#D5EFE5}.rp-fb .n{background:#FFF4CF}
+.rp-fb b{font-size:11.5px}
+.rp-fb ul{margin:2px 0 0;padding-left:1.1em}
+.rp-type{font-weight:700;font-size:12.5px;margin:0 0 5px}
+.rp-type span{font-weight:400;color:#56627A;font-size:11px;margin-left:6px}
+.pdf-msg{text-align:center;color:var(--sub);font-size:14px;min-height:1.5em}
+@media print{
+  @page{size:A4;margin:0}
+  body{background:#fff}
+  body > *:not(#a4Wrap){display:none!important}
+  #a4Wrap{position:static}
+}
+</style>
+</head>
+<body>
+
+<header class="status hidden" id="status">
+  <div class="shop"><span id="shopName">アイス屋</span><span class="room-chip hidden" id="stRoom"></span></div>
+  <div class="stats">
+    <div>所持金 <b id="stCash">0</b>円</div>
+    <div>評判 <b id="stRep">★★★</b></div>
+  </div>
+  <div class="status-right"><button class="rules-btn" id="btnRules">？ ルール</button><button class="rules-btn" id="btnHome">🏠 TOPへ</button>
+  <div class="days" id="stDays" aria-label="営業日の進み具合"></div></div>
+</header>
+
+<main class="wrap">
+
+<!-- START -->
+<section id="scStart">
+  <div class="hero">
+    <h1>アイス屋さんを<br>5日間経営しよう</h1>
+    <p>元手は50,000円。毎日の天気予報と気温を見ながら「何個仕入れるか」「いくらで売るか」「アルバイトを何人雇うか」を決めて、5日後にいちばんお金を増やしたお店が勝ちです。</p>
+  </div>
+  <div class="modes">
+    <div class="mode-card">
+      <div class="awning" aria-hidden="true"></div>
+      <div class="mode-body">
+        <p class="mode-tag">🧑 ひとりで・班で</p>
+        <h2>ソロプレイ</h2>
+        <p class="mode-desc">自分のペースで5日間を進めます。自習や練習に。</p>
+        <label class="name" for="inName">お店の名前</label>
+        <input type="text" id="inName" maxlength="16" placeholder="例：3班のミントアイス">
+        <div class="actions"><button class="btn btn-main" id="btnStart">ソロで始める</button></div>
+      </div>
+    </div>
+    <div class="mode-card battle">
+      <div class="awning alt" aria-hidden="true"></div>
+      <div class="mode-body">
+        <p class="mode-tag">🏫 クラスのみんなと</p>
+        <h2>クラス対戦</h2>
+        <p class="mode-desc">先生の合図で全員いっしょに1日ずつ進みます。ルーム番号は先生の画面に出ています。</p>
+        <div class="join-grid">
+          <div><label class="name" for="inRoom">ルーム番号（4けた）</label>
+          <input type="text" id="inRoom" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="例：1234" autocomplete="off"></div>
+          <div><label class="name" for="inTeam">班の名前</label>
+          <input type="text" id="inTeam" maxlength="16" placeholder="例：3班"></div>
+        </div>
+        <div class="actions"><button class="btn btn-main" id="btnJoin">対戦に参加する</button></div>
+        <p class="join-msg" id="joinMsg" role="status"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOBBY (battle) -->
+<section id="scLobby" class="hidden">
+  <div class="lobby">
+    <div class="lobby-ill" aria-hidden="true">🍦</div>
+    <h2 id="lbTitle">参加しました！</h2>
+    <p id="lbText">先生が「スタート」を押すまで、少し待ってね。</p>
+    <div class="lobby-info"><span>ルーム <b id="lbRoom">----</b></span><span>班 <b id="lbTeam">-</b></span></div>
+    <div class="actions" style="justify-content:center"><button class="btn btn-sub" id="lbRules">ルールをもう一度見る</button></div>
+    <p class="conn" id="lbConn"></p>
+  </div>
+</section>
+
+<!-- DECIDE -->
+<section id="scDecide" class="hidden">
+  <div class="dayhead">
+    <h2 id="dTitle">1日目</h2>
+    <div class="forecast"><span class="ic" id="dFcIcon">☀️</span><span>天気予報：<b id="dFcText">晴れ</b>　最高気温 <b id="dFcTemp">28</b>℃</span></div>
+  </div>
+  <div class="news hidden" id="dNews"></div>
+  <div class="timer hidden" id="dTimer"></div>
+  <div class="submitted hidden" id="dSubmitted">
+    <div><b>✅ 作戦を提出しました</b><span id="dSubText"></span><small>先生が「営業開始」を押すまで待ってね。</small></div>
+    <button class="btn btn-sub" id="btnUnsubmit">作戦を変える</button>
+  </div>
+
+  <div class="grid2">
+    <div class="panel ctrls">
+      <div class="ctrl c-loc">
+        <div class="ctrl-top"><h3>出店場所</h3></div>
+        <div class="adopts" id="locOpts"></div>
+        <p class="hint" id="hLoc" style="margin:8px 0 0"></p>
+      </div>
+      <div class="ctrl c-price">
+        <div class="ctrl-top"><h3>販売価格</h3><div><span class="val" id="vPrice">300</span> 円</div></div>
+        <p class="hint">100円〜600円。高くするとお客さんは減ります。</p>
+        <div class="stepper">
+          <button data-step="price" data-d="-50" aria-label="価格を50円下げる">−</button>
+          <input type="range" id="rPrice" min="100" max="600" step="50" value="300" aria-label="販売価格">
+          <button data-step="price" data-d="50" aria-label="価格を50円上げる">＋</button>
+        </div>
+      </div>
+      <div class="ctrl c-stock">
+        <div class="ctrl-top"><h3>仕入れる数</h3><div><span class="val" id="vStock">80</span> 個分</div></div>
+        <p class="hint" id="hStock">1個80円（100個以上なら1個65円）</p>
+        <div class="stepper">
+          <button data-step="stock" data-d="-10" aria-label="仕入れを10個減らす">−</button>
+          <input type="range" id="rStock" min="0" max="300" step="10" value="80" aria-label="仕入れる数">
+          <button data-step="stock" data-d="10" aria-label="仕入れを10個増やす">＋</button>
+        </div>
+      </div>
+      <div class="ctrl c-staff">
+        <div class="ctrl-top"><h3>アルバイト</h3><div><span class="val" id="vStaff">1</span> 人</div></div>
+        <p class="hint" id="hStaff">さばける人数：店長30人＋アルバイト50人 = 80人</p>
+        <div class="stepper">
+          <button data-step="staff" data-d="-1" aria-label="アルバイトを1人減らす">−</button>
+          <input type="range" id="rStaff" min="0" max="5" step="1" value="1" aria-label="アルバイトの人数">
+          <button data-step="staff" data-d="1" aria-label="アルバイトを1人増やす">＋</button>
+        </div>
+      </div>
+      <div class="ctrl c-ad">
+        <div class="ctrl-top"><h3>宣伝</h3></div>
+        <div class="adopts" id="adOpts"></div>
+      </div>
+      <div class="ctrl c-rest rest-box hidden" id="restBox">
+        <p>☔ 雨の予報です。今日はお店を休むこともできます。<br>お金は1円もかからないけど、売上も0円です。</p>
+        <button class="btn btn-rest" id="btnRest">☂️ 今日はお店を休む</button>
+      </div>
+    </div>
+
+    <div class="panel plan">
+      <h3>今日はじめに払うお金</h3>
+      <div class="row"><span>材料（仕入れ）</span><span id="pMat">0円</span></div>
+      <div class="row"><span>アルバイト代</span><span id="pStaff">0円</span></div>
+      <div class="row"><span>出店料（場所代）</span><span id="pRent">3,000円</span></div>
+      <div class="row"><span>宣伝費</span><span id="pAd">0円</span></div>
+      <div class="row total"><span>合計</span><span id="pTotal">0円</span></div>
+      <div class="meter">
+        元を取るには<br><strong id="pBreak">0個</strong> 売る必要あり
+        <div style="font-size:13px;color:var(--sub)" id="pMax">最大で売れるのは 0個（在庫と焼ける数の少ない方）</div>
+      </div>
+      <div class="warn hidden" id="pWarn"></div>
+      <div class="actions"><button class="btn btn-main" id="btnOpen">この作戦で営業する</button></div>
+      <details>
+        <summary>ことばの意味</summary>
+        <dl>
+          <dt>売上</dt><dd>売れた数 × 価格。お客さんから受け取ったお金。</dd>
+          <dt>原価（仕入れ）</dt><dd>商品を作るための材料のお金。売れ残っても戻ってこない。</dd>
+          <dt>人件費</dt><dd>働いてくれる人に払うお金。</dd>
+          <dt>固定費</dt><dd>売れても売れなくてもかかるお金（出店料など）。</dd>
+          <dt>利益</dt><dd>売上 − かかったお金全部。マイナスなら赤字。</dd>
+          <dt>売り逃し</dt><dd>買いたい人がいたのに、在庫切れや人手不足で売れなかった分。</dd>
+          <dt>需要</dt><dd>「買いたい」と思っている人の数。天気・気温・価格・宣伝・評判で変わる。</dd>
+        </dl>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- RESULT -->
+<section id="scResult" class="hidden">
+  <div class="dayhead"><h2 id="rTitle">1日目の結果</h2>
+    <div class="forecast"><span class="ic" id="rWIcon">☀️</span><span>実際の天気：<b id="rWText">晴れ</b>　最高気温 <b id="rTemp">28</b>℃</span></div>
+  </div>
+  <div class="result-grid">
+  <div>
+  <div class="receipt-stage"><div class="receipt" id="receipt"></div></div>
+  <div class="actions side-next"><button class="btn btn-main" data-next>次の日へ</button></div>
+  <div class="wait-note hidden" data-wait>⏳ 先生が次の日に進めるまで待ってね</div>
+  </div>
+  <div class="panel result-panel">
+    <h3 style="font-size:18px" id="rPanelTitle">今日のお客さん</h3>
+    <div class="customers" id="rDots" aria-hidden="true"></div>
+    <div class="legend" id="rLegend">
+      <span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg><span style="color:var(--sub)">買えた人</span></span>
+      <span class="p-lost"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg><span style="color:var(--sub)">買えずに帰った人</span></span>
+      <span><i class="c-waste" style="width:12px;height:12px;display:inline-block"></i>売れ残り</span>
+    </div>
+    <div class="rank-chip hidden" id="rRank"></div>
+    <p id="rSummary" style="margin-bottom:0"></p>
+    <ul class="feedback" id="rFeedback"></ul>
+    <div class="actions"><button class="btn btn-main" id="btnNext" data-next>次の日へ</button></div>
+    <div class="wait-note hidden" data-wait>⏳ 先生が次の日に進めるまで待ってね</div>
+  </div>
+  </div>
+</section>
+
+<!-- FINAL -->
+<section id="scFinal" class="hidden">
+  <div class="final-row">
+  <div class="final-top">
+    <div class="title" id="fTitle">称号</div>
+    <h2 style="margin-top:12px;font-size:20px" id="fShop"></h2>
+    <div class="rank-chip hidden" id="fRank"></div>
+    <div style="color:var(--sub)">5日間で増えたお金</div>
+    <div class="money" id="fProfit">0円</div>
+    <div style="color:var(--sub)" id="fCash"></div>
+  </div>
+  <div class="panel">
+    <h3 style="font-size:18px">あなたの経営をふりかえると</h3>
+    <div class="fb-type"><b id="fbType"></b><span id="fbTypeDesc"></span></div>
+    <div class="fb-cols">
+      <div class="fb-col good"><h4>👍 よかったところ</h4><ul id="fbGood"></ul></div>
+      <div class="fb-col next"><h4>🎯 次に挑戦したいこと</h4><ul id="fbNext"></ul></div>
+    </div>
+  </div>
+  </div>
+  <div class="panel chart">
+    <h3 style="font-size:18px">毎日の利益</h3>
+    <div id="fChart"></div>
+  </div>
+  <div class="panel">
+    <h3 style="font-size:18px;margin-bottom:8px">5日間の記録</h3>
+    <div class="scroll"><table id="fTable"></table></div>
+  </div>
+  <div class="panel" id="corrPanel">
+    <h3 style="font-size:18px">データで見るあなたのお店（散布図）</h3>
+    <p class="corr-intro">5日間の記録を、2つのデータの関係がわかる「散布図」にしました。点1つが1日分で、点の中の数字は何日目か、点の色はその日の天気を表しています。</p>
+    <div class="corr-legend"><span><i style="background:#F08A3C"></i>晴れ</span><span><i style="background:#8A97A8"></i>くもり</span><span><i style="background:#4A86C8"></i>雨</span><span><i class="dash"></i>近似直線（全体の傾向）</span></div>
+    <div class="corr-grid" id="corrGrid"></div>
+    <p class="corr-note" id="corrNote"></p>
+    <div class="lesson">
+      <h4>📊 データサイエンスのミニ講座：グラフの読み方</h4>
+      <div class="lesson-grid">
+        <div class="lesson-card"><b>① 散布図とは？</b><p>2種類のデータの関係を見るためのグラフです。横軸に1つ目のデータ（例：気温）、縦軸に2つ目のデータ（例：お客さんの数）をとり、1日分を1つの点で表します。点の並び方を見ると、「片方が増えると、もう片方はどうなるか」がわかります。</p></div>
+        <div class="lesson-card"><b>② 相関の3つのパターン</b>
+          <div class="pat">
+            <figure><svg viewBox="0 0 80 60" aria-hidden="true"><path d="M4 4V56H78" stroke="var(--sub)" stroke-width="1.5" fill="none"/><line x1="8" y1="52" x2="72" y2="10" stroke="var(--berry)" stroke-width="2" stroke-dasharray="4 3"/><circle cx="12" cy="48" r="4" fill="var(--mint)"/><circle cx="22" cy="42" r="4" fill="var(--mint)"/><circle cx="30" cy="36" r="4" fill="var(--mint)"/><circle cx="40" cy="30" r="4" fill="var(--mint)"/><circle cx="50" cy="22" r="4" fill="var(--mint)"/><circle cx="60" cy="16" r="4" fill="var(--mint)"/><circle cx="68" cy="12" r="4" fill="var(--mint)"/></svg><figcaption>正の相関<small>右上がり：片方が増えると<br>もう片方も増える</small></figcaption></figure>
+            <figure><svg viewBox="0 0 80 60" aria-hidden="true"><path d="M4 4V56H78" stroke="var(--sub)" stroke-width="1.5" fill="none"/><line x1="8" y1="8" x2="72" y2="52" stroke="var(--berry)" stroke-width="2" stroke-dasharray="4 3"/><circle cx="12" cy="12" r="4" fill="var(--mint)"/><circle cx="22" cy="18" r="4" fill="var(--mint)"/><circle cx="30" cy="24" r="4" fill="var(--mint)"/><circle cx="40" cy="30" r="4" fill="var(--mint)"/><circle cx="50" cy="38" r="4" fill="var(--mint)"/><circle cx="60" cy="42" r="4" fill="var(--mint)"/><circle cx="68" cy="48" r="4" fill="var(--mint)"/></svg><figcaption>負の相関<small>右下がり：片方が増えると<br>もう片方は減る</small></figcaption></figure>
+            <figure><svg viewBox="0 0 80 60" aria-hidden="true"><path d="M4 4V56H78" stroke="var(--sub)" stroke-width="1.5" fill="none"/><circle cx="12" cy="30" r="4" fill="var(--mint)"/><circle cx="22" cy="14" r="4" fill="var(--mint)"/><circle cx="30" cy="44" r="4" fill="var(--mint)"/><circle cx="40" cy="24" r="4" fill="var(--mint)"/><circle cx="50" cy="40" r="4" fill="var(--mint)"/><circle cx="60" cy="18" r="4" fill="var(--mint)"/><circle cx="68" cy="34" r="4" fill="var(--mint)"/></svg><figcaption>相関なし<small>バラバラ：はっきりした<br>関係は見えない</small></figcaption></figure>
+          </div></div>
+        <div class="lesson-card"><b>③ 相関係数 r（アール）</b><p>相関の強さを −1 から 1 までの数で表したものです。1に近いほど強い正の相関、−1に近いほど強い負の相関、0に近いほど相関がないことを表します。目安として、絶対値が0.7以上なら「強い」、0.4以上なら「中くらい」、0.2以上なら「弱い」相関といいます。</p></div>
+        <div class="lesson-card"><b>④ 近似直線（点線）</b><p>点の集まりのまん中を通るように引いた線で、データ全体の傾向を表します。線が右上がりなら正の相関、右下がりなら負の相関です。線から大きく外れた点（外れ値）は、その日に何か特別なことがあったサインかもしれません。</p></div>
+        <div class="lesson-card caution"><b>⚠️ 注意1：相関があっても「原因」とは限らない</b><p>たとえば4日目は、気温はふつうでも花火大会でお客さんが増えました。グラフだけを見て「気温だけが理由」と決めつけず、ほかにどんな理由があったかを考えることが大切です。</p></div>
+        <div class="lesson-card caution"><b>⚠️ 注意2：データの数が少ない</b><p>今回のデータは5日分だけです。データが少ないと、1日の特別な出来事で結果が大きく変わってしまいます。本当の関係を知るには、もっとたくさんのデータを集める必要があります。</p></div>
+      </div>
+      <div class="think"><b>🤔 考えてみよう</b>
+        <ol>
+          <li>いちばん強い相関があったのは、どのグラフですか？ それはなぜだと思いますか？</li>
+          <li>近似直線から大きく外れている点はありますか？ その日に何があったか、記録表で確かめてみよう。</li>
+          <li>ほかのクラスの人とデータを合わせて点を増やしたら、グラフはどう変わると思いますか？</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+  <div class="panel qs">
+    <h3 style="font-size:18px">ふりかえり</h3>
+    <ol>
+      <li>いちばん利益が出た日はいつ？ その日は何がうまくいった？<textarea maxlength="150"></textarea></li>
+      <li>気温とお客さんの数には、どんな関係があった？ 予報が外れた日はどうなった？<textarea maxlength="150"></textarea></li>
+      <li>価格を上げた日・下げた日で、お客さんの数と利益はどう変わった？<textarea maxlength="150"></textarea></li>
+      <li>「売れ残り」と「売り逃し」、あなたのお店にとってはどちらが痛かった？ なぜ？<textarea maxlength="150"></textarea></li>
+      <li>もう一度5日間やるなら、何をどう変える？<textarea maxlength="150"></textarea></li>
+    </ol>
+  </div>
+  <div class="actions" style="justify-content:center">
+    <button class="btn btn-sub" id="btnPrint">結果をPDFで保存（A4）</button>
+    <button class="btn btn-main" id="btnRetry">もう一度挑戦する</button>
+  </div>
+  <p class="pdf-msg" id="pdfMsg" role="status"></p>
+</section>
+
+</main>
+<div class="modal hidden" id="homeModal" role="dialog" aria-modal="true" aria-labelledby="homeTitle">
+  <div class="modal-card">
+    <h2 id="homeTitle">ゲームを中断しますか？</h2>
+    <p id="homeText">TOP画面に戻ると、ここまでの記録（所持金・毎日の結果・ふりかえりの入力）は消えて、最初からやり直しになります。</p>
+    <div class="modal-actions">
+      <button class="btn btn-sub" id="homeCancel">ゲームを続ける</button>
+      <button class="btn btn-main" id="homeOk">中断してTOPに戻る</button>
+    </div>
+  </div>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="ic-person" viewBox="0 0 16 21"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></symbol>
+<symbol id="mini-stand" viewBox="0 0 48 44">
+ <rect x="4" y="2" width="40" height="4" rx="2" fill="#1F2A44"/>
+ <rect x="5" y="6" width="10" height="9" fill="#D93A55"/><rect x="15" y="6" width="9" height="9" fill="#FBE3E8"/><rect x="24" y="6" width="10" height="9" fill="#D93A55"/><rect x="34" y="6" width="9" height="9" fill="#FBE3E8"/>
+ <rect x="7" y="15" width="3" height="18" fill="#1F2A44"/><rect x="38" y="15" width="3" height="18" fill="#1F2A44"/>
+ <rect x="3" y="28" width="42" height="15" rx="3" fill="#fff" stroke="#1F2A44" stroke-width="2"/>
+ <circle cx="24" cy="33" r="3.5" fill="#F7A1B4"/><path d="M21 35h6l-3 6z" fill="#E0A458"/>
+</symbol>
+</defs></svg>
+<div class="tut hidden" id="tut" role="dialog" aria-modal="true" aria-label="ゲームの説明">
+ <div class="tut-card">
+  <div class="tut-top">
+   <div class="tut-steps" id="tutSteps"></div>
+   <div class="tut-page" id="tutPage">1 / 6</div>
+   <button class="tut-close" id="tutClose" aria-label="説明を閉じる">×</button>
+  </div>
+  <div class="tut-body" id="tutBody">
+
+   <section class="slide">
+    <div class="s1-top"><div>
+    <p class="s-kicker">ルール説明 1</p>
+    <h2>このゲームのゴール</h2>
+    <p class="s-lead">あなたはアイス屋さんの店長です。<b>5日間でお金をいちばん増やしたお店が勝ち！</b></p>
+    <div class="goal">
+     <div class="goal-box"><small>スタート</small><b>50,000円</b><span>お店を始めるお金（元手）</span></div>
+     <div class="goal-arrow" aria-hidden="true">→</div>
+     <div class="goal-box win"><small>5日後</small><b>？？？円</b><span>いくら増やせるかな？</span></div>
+    </div>
+    </div><svg class="ill-stand" viewBox="0 -34 260 256" role="img" aria-label="アイス屋さんの屋台のイラスト">
+ <ellipse cx="130" cy="210" rx="112" ry="8" fill="#000" opacity=".08"/>
+ <circle cx="232" cy="-10" r="14" fill="#F4C542"/>
+ <g stroke="#F4C542" stroke-width="4" stroke-linecap="round"><line x1="210" y1="-10" x2="203" y2="-10"/><line x1="232" y1="12" x2="232" y2="16"/><line x1="216" y1="-26" x2="211" y2="-31"/><line x1="216" y1="6" x2="211" y2="11"/><line x1="248" y1="6" x2="253" y2="11"/></g>
+ <rect x="34" y="70" width="9" height="110" rx="3" fill="#1F2A44"/><rect x="217" y="70" width="9" height="110" rx="3" fill="#1F2A44"/>
+ <path d="M98 160q32-34 64 0z" fill="#2E9C7A"/>
+ <circle cx="130" cy="114" r="19" fill="#F3C9A8"/>
+ <path d="M110 104q20-22 40 0z" fill="#fff" stroke="#1F2A44" stroke-width="2.5"/>
+ <circle cx="123" cy="115" r="2.3" fill="#1F2A44"/><circle cx="137" cy="115" r="2.3" fill="#1F2A44"/>
+ <path d="M123 123q7 6 14 0" stroke="#1F2A44" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+ <circle cx="116" cy="121" r="3" fill="#F7A1B4" opacity=".7"/><circle cx="144" cy="121" r="3" fill="#F7A1B4" opacity=".7"/>
+ <rect x="24" y="148" width="212" height="56" rx="8" fill="#fff" stroke="#1F2A44" stroke-width="3"/>
+ <rect x="25.5" y="149.5" width="209" height="11" rx="5" fill="#2E9C7A"/>
+ <path d="M62 180h18l-9 20z" fill="#E0A458"/><circle cx="71" cy="175" r="9.5" fill="#F7A1B4"/>
+ <path d="M180 180h18l-9 20z" fill="#E0A458"/><circle cx="189" cy="175" r="9.5" fill="#9BE0C8"/>
+ <text x="130" y="190" text-anchor="middle" font-size="22" font-weight="900" fill="#D93A55" font-family="Zen Maru Gothic, sans-serif">アイス</text>
+ <path d="M51 134h16l-8 14z" fill="#E0A458"/><circle cx="59" cy="131" r="8.5" fill="#F4C542"/>
+ <path d="M193 134h16l-8 14z" fill="#E0A458"/><circle cx="201" cy="131" r="8.5" fill="#F7A1B4"/>
+ <rect x="18" y="22" width="224" height="12" rx="5" fill="#1F2A44"/>
+ <rect x="22" y="34" width="27" height="30" fill="#D93A55"/><circle cx="35.5" cy="64" r="13.5" fill="#D93A55"/><rect x="49" y="34" width="27" height="30" fill="#FBE3E8"/><circle cx="62.5" cy="64" r="13.5" fill="#FBE3E8"/><rect x="76" y="34" width="27" height="30" fill="#D93A55"/><circle cx="89.5" cy="64" r="13.5" fill="#D93A55"/><rect x="103" y="34" width="27" height="30" fill="#FBE3E8"/><circle cx="116.5" cy="64" r="13.5" fill="#FBE3E8"/><rect x="130" y="34" width="27" height="30" fill="#D93A55"/><circle cx="143.5" cy="64" r="13.5" fill="#D93A55"/><rect x="157" y="34" width="27" height="30" fill="#FBE3E8"/><circle cx="170.5" cy="64" r="13.5" fill="#FBE3E8"/><rect x="184" y="34" width="27" height="30" fill="#D93A55"/><circle cx="197.5" cy="64" r="13.5" fill="#D93A55"/><rect x="211" y="34" width="27" height="30" fill="#FBE3E8"/><circle cx="224.5" cy="64" r="13.5" fill="#FBE3E8"/>
+</svg></div>
+    <h3 class="s-h3">1日の流れ（これを5日くり返す）</h3>
+    <div class="flow">
+     <div class="flow-step"><em>1</em><b>作戦を決める</b><span>天気予報を見て、場所・値段・仕入れなどを決める</span></div>
+     <div class="flow-step"><em>2</em><b>お店を開く</b><span>ボタンを押すと、1日の営業が自動で進む</span></div>
+     <div class="flow-step"><em>3</em><b>結果を見る</b><span>売上やもうけを確かめて、次の日の作戦を考える</span></div>
+    </div>
+   </section>
+
+   <section class="slide">
+    <p class="s-kicker">ルール説明 2</p>
+    <h2>もうけ（利益）の計算</h2>
+    <div class="eq">
+     <div class="eq-box sales"><svg class="eq-ill" viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="32" cy="54" rx="18" ry="6" fill="#C99414"/><rect x="14" y="44" width="36" height="10" fill="#C99414"/><ellipse cx="32" cy="44" rx="18" ry="6" fill="#F4C542" stroke="#C99414" stroke-width="1.5"/><ellipse cx="32" cy="44" rx="18" ry="6" fill="#C99414"/><rect x="14" y="34" width="36" height="10" fill="#C99414"/><ellipse cx="32" cy="34" rx="18" ry="6" fill="#F4C542" stroke="#C99414" stroke-width="1.5"/><ellipse cx="32" cy="34" rx="18" ry="6" fill="#C99414"/><rect x="14" y="24" width="36" height="10" fill="#C99414"/><ellipse cx="32" cy="24" rx="18" ry="6" fill="#F4C542" stroke="#C99414" stroke-width="1.5"/><text x="32" y="28" text-anchor="middle" font-size="10" font-weight="700" fill="#8A6400">¥</text></svg><small>売上</small><b>お客さんから<br>もらったお金</b></div>
+     <div class="eq-op">−</div>
+     <div class="eq-box cost"><svg class="eq-ill" viewBox="0 0 64 64" aria-hidden="true">
+ <rect x="18" y="12" width="13" height="20" fill="#fff" stroke="#1F2A44" stroke-width="2"/><path d="M18 12l6.5-7 6.5 7z" fill="#7FB3E8" stroke="#1F2A44" stroke-width="2" stroke-linejoin="round"/>
+ <path d="M42 14q8 0 8 8q-3 11-8 11t-8-11q0-8 8-8z" fill="#D93A55"/><path d="M37 14l5 3 5-3-5-3z" fill="#2E9C7A"/>
+ <path d="M8 30h48l-6 26H14z" fill="#C98B4B" stroke="#1F2A44" stroke-width="2.5" stroke-linejoin="round"/>
+ <path d="M20 36v14M32 36v14M44 36v14" stroke="#8C5A2B" stroke-width="2.5" stroke-linecap="round"/>
+</svg><small>かかったお金</small><b>材料・アルバイト<br>場所代・宣伝</b></div>
+     <div class="eq-op">＝</div>
+     <div class="eq-box profit"><svg class="eq-ill" viewBox="0 0 64 64" aria-hidden="true">
+ <circle cx="30" cy="12" r="8" fill="#F4C542" stroke="#C99414" stroke-width="1.5"/><text x="30" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="#8A6400">¥</text>
+ <rect x="20" y="48" width="6" height="10" rx="2" fill="#F28BA3"/><rect x="36" y="48" width="6" height="10" rx="2" fill="#F28BA3"/>
+ <ellipse cx="30" cy="40" rx="21" ry="15" fill="#F7A1B4"/><path d="M16 28l2-9 8 6z" fill="#F28BA3"/>
+ <ellipse cx="51" cy="40" rx="6" ry="5" fill="#F28BA3"/><circle cx="49.5" cy="39.5" r="1.2" fill="#1F2A44"/><circle cx="52.5" cy="39.5" r="1.2" fill="#1F2A44"/>
+ <circle cx="40" cy="34" r="2" fill="#1F2A44"/><rect x="24" y="26" width="12" height="3" rx="1.5" fill="#1F2A44"/>
+</svg><small>利益</small><b>お店に<br>残るお金</b></div>
+    </div>
+    <div class="example">
+     <p class="ex-title">例：アイスを300円で100個売った日</p>
+     <div class="ex-grid">
+      <div><p class="ex-h">売上</p><p>300円 × 100個 ＝ <b>30,000円</b></p></div>
+      <div><p class="ex-h">かかったお金</p><p>材料 65円×100個 ＝ 6,500円<br>アルバイト 2人 ＝ 12,000円<br>場所代（商店街）＝ 3,000円<br>合計 ＝ <b>21,500円</b></p></div>
+      <div class="ex-ans"><p class="ex-h">利益</p><p>30,000円 − 21,500円<br>＝ <b class="big-pos">8,500円</b>（黒字）</p></div>
+     </div>
+    </div>
+    <p class="s-note">売上より、かかったお金のほうが多いと<b>「赤字」</b>。お店のお金が減ってしまいます。</p>
+   </section>
+
+   <section class="slide">
+    <p class="s-kicker">ルール説明 3</p>
+    <h2>毎日決める5つのこと</h2>
+    <div class="five">
+     <div class="five-card"><i><svg viewBox="0 0 48 48"><rect x="4" y="20" width="11" height="24" fill="#7FB3E8"/><rect x="17" y="12" width="13" height="32" fill="#1F2A44"/><rect x="32" y="24" width="11" height="20" fill="#9BD4B5"/>
+ <g fill="#F4C542"><rect x="20" y="16" width="3" height="3"/><rect x="25" y="16" width="3" height="3"/><rect x="20" y="23" width="3" height="3"/><rect x="25" y="23" width="3" height="3"/><rect x="20" y="30" width="3" height="3"/><rect x="25" y="30" width="3" height="3"/></g>
+ <path d="M38 2a7 7 0 0 1 7 7c0 6-7 12-7 12s-7-6-7-12a7 7 0 0 1 7-7z" fill="#D93A55"/><circle cx="38" cy="9" r="2.6" fill="#fff"/><path d="M2 44h44" stroke="#1F2A44" stroke-width="2.5" stroke-linecap="round"/></svg></i><b>出店場所</b><p>繁華街 5,000円<br>商店街 3,000円<br>家の前 0円</p><span>人通りと場所代がちがう</span></div>
+     <div class="five-card"><i><svg viewBox="0 0 48 48"><path d="M6 24L24 6h18v18L24 42z" fill="#F4C542" stroke="#1F2A44" stroke-width="2.5" stroke-linejoin="round"/><circle cx="35" cy="13" r="3" fill="#fff" stroke="#1F2A44" stroke-width="2"/><text x="23" y="31" text-anchor="middle" font-size="14" font-weight="900" fill="#1F2A44" transform="rotate(-45 23 27)">¥</text></svg></i><b>値段</b><p>100円〜600円</p><span>高いと1個のもうけは大きい。<br>でも、お客さんは減る</span></div>
+     <div class="five-card"><i><svg viewBox="0 0 48 48"><path d="M15 20h14l-7 14z" fill="#E0A458"/><circle cx="22" cy="15" r="7" fill="#F7A1B4"/><circle cx="31" cy="17" r="6" fill="#9BE0C8"/>
+ <rect x="6" y="26" width="36" height="17" rx="2" fill="#C98B4B" stroke="#1F2A44" stroke-width="2.5"/><path d="M6 26l-3-6h14l3 6M42 26l3-6H31l-3 6" fill="#DDA56B" stroke="#1F2A44" stroke-width="2" stroke-linejoin="round"/></svg></i><b>仕入れ</b><p>1個 80円<br>（100個以上なら65円）</p><span>売れ残ったアイスは<br>その日のうちに捨てる</span></div>
+     <div class="five-card"><i><svg viewBox="0 0 48 48"><path d="M10 46q14-26 28 0z" fill="#2E9C7A"/><rect x="18" y="32" width="12" height="14" rx="2" fill="#fff" stroke="#1F2A44" stroke-width="1.5"/>
+ <circle cx="24" cy="19" r="9" fill="#F3C9A8"/><path d="M14 14q10-12 20 0z" fill="#fff" stroke="#1F2A44" stroke-width="2"/><circle cx="21" cy="20" r="1.4" fill="#1F2A44"/><circle cx="27" cy="20" r="1.4" fill="#1F2A44"/><path d="M21 24q3 2.5 6 0" stroke="#1F2A44" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></i><b>アルバイト</b><p>1人 6,000円</p><span>1人で50人に売れる。<br>店長のあなたは30人まで</span></div>
+     <div class="five-card"><i><svg viewBox="0 0 48 48"><path d="M6 19h8l18-11v30L14 27H6z" fill="#D93A55" stroke="#1F2A44" stroke-width="2.5" stroke-linejoin="round"/><rect x="12" y="27" width="6" height="12" rx="2" fill="#1F2A44"/>
+ <path d="M37 16q5 7 0 14M41 11q9 12 0 24" stroke="#1F2A44" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg></i><b>宣伝</b><p>チラシ 2,000円<br>SNS広告 5,000円</p><span>お金をかけると<br>お客さんが増える</span></div>
+    </div>
+       <p class="s-note">☂️ 雨の予報の日は<b>「今日はお店を休む」</b>も選べます。お金は1円もかからないけど、売上も0円です。</p>
+   </section>
+
+   <section class="slide">
+    <p class="s-kicker">ルール説明 4</p>
+    <h2>お客さんの数はどう決まる？</h2>
+    <p class="s-lead">いちばん大きいのは<b>天気と気温</b>。アイスは暑い日ほどよく売れます。</p>
+    <div class="scenes">
+     <figure><svg viewBox="0 0 180 104" aria-hidden="true"><rect width="180" height="104" rx="12" fill="#DCE7F2"/>
+ <g fill="#9AA7B8"><circle cx="40" cy="24" r="12"/><circle cx="56" cy="20" r="15"/><circle cx="72" cy="26" r="11"/><rect x="30" y="24" width="52" height="13" rx="6"/></g>
+ <g stroke="#6F8FB8" stroke-width="2.5" stroke-linecap="round"><line x1="36" y1="44" x2="32" y2="54"/><line x1="52" y1="44" x2="48" y2="54"/><line x1="68" y1="44" x2="64" y2="54"/><line x1="44" y1="58" x2="40" y2="68"/><line x1="60" y1="58" x2="56" y2="68"/><line x1="92" y1="40" x2="88" y2="50"/></g>
+ <use href="#ic-person" x="46" y="72" width="14" height="18" fill="#2E9C7A"/><path d="M40 70q13-14 26 0z" fill="#7FB3E8"/><line x1="53" y1="70" x2="53" y2="78" stroke="#1F2A44" stroke-width="1.5"/>
+ <use href="#mini-stand" x="122" y="48" width="50" height="46"/><rect x="0" y="92" width="180" height="12" rx="0" fill="#B9C7D6"/></svg><figcaption>🥶 19℃<small>とても少ない</small></figcaption></figure>
+     <figure><svg viewBox="0 0 180 104" aria-hidden="true"><rect width="180" height="104" rx="12" fill="#E3F2EC"/>
+ <circle cx="48" cy="26" r="13" fill="#F4C542"/><g fill="#fff"><circle cx="58" cy="32" r="10"/><circle cx="72" cy="28" r="12"/><circle cx="84" cy="33" r="8"/><rect x="52" y="32" width="36" height="9" rx="4"/></g>
+ <use href="#ic-person" x="60" y="72" width="14" height="18" fill="#2E9C7A"/><use href="#ic-person" x="80" y="72" width="14" height="18" fill="#2E9C7A"/><use href="#ic-person" x="100" y="72" width="14" height="18" fill="#2E9C7A"/>
+ <use href="#mini-stand" x="122" y="48" width="50" height="46"/><rect x="0" y="92" width="180" height="12" fill="#BFDCCF"/></svg><figcaption>25℃<small>ふつう</small></figcaption></figure>
+     <figure><svg viewBox="0 0 180 104" aria-hidden="true"><rect width="180" height="104" rx="12" fill="#FCE3CF"/>
+ <circle cx="40" cy="28" r="15" fill="#F08A3C"/><g stroke="#F08A3C" stroke-width="3.5" stroke-linecap="round"><line x1="40" y1="5" x2="40" y2="9"/><line x1="17" y1="28" x2="21" y2="28"/><line x1="63" y1="28" x2="59" y2="28"/><line x1="24" y1="12" x2="27" y2="15"/><line x1="56" y1="12" x2="53" y2="15"/><line x1="24" y1="44" x2="27" y2="41"/><line x1="56" y1="44" x2="53" y2="41"/></g>
+ <path d="M80 22q4-4 0-8t0-8M92 24q4-4 0-8t0-8" stroke="#E8743B" stroke-width="2" fill="none" stroke-linecap="round"/>
+ <use href="#ic-person" x="8" y="72" width="13" height="17" fill="#2E9C7A"/><use href="#ic-person" x="22" y="72" width="13" height="17" fill="#2E9C7A"/><use href="#ic-person" x="36" y="72" width="13" height="17" fill="#2E9C7A"/><use href="#ic-person" x="50" y="72" width="13" height="17" fill="#2E9C7A"/><use href="#ic-person" x="64" y="72" width="13" height="17" fill="#2E9C7A"/><use href="#ic-person" x="78" y="72" width="13" height="17" fill="#2E9C7A"/><use href="#ic-person" x="92" y="72" width="13" height="17" fill="#2E9C7A"/><use href="#ic-person" x="106" y="72" width="13" height="17" fill="#2E9C7A"/>
+ <use href="#mini-stand" x="122" y="48" width="50" height="46"/><rect x="0" y="92" width="180" height="12" fill="#EDC7A6"/></svg><figcaption>🥵 35℃<small>とても多い</small></figcaption></figure>
+    </div>
+    <div class="thermo-wrap">
+     <div class="thermo" aria-hidden="true"></div>
+    </div>
+    <div class="wx">
+     <div><i>☀️</i><b>晴れ</b><span>少し多い</span></div>
+     <div><i>☁️</i><b>くもり</b><span>ふつう</span></div>
+     <div><i>☔</i><b>雨</b><span>少ない</span></div>
+    </div>
+    <p class="s-note">ほかに <b>値段・場所・宣伝・お店の評判</b> でもお客さんの数は変わります。<br>⚠️ 天気予報は<b>外れることもあります</b>。予報を信じすぎないのも作戦です。</p>
+   </section>
+
+   <section class="slide">
+    <p class="s-kicker">ルール説明 5</p>
+    <h2>「売れ残り」と「売り逃し」</h2>
+    <div class="two">
+     <div class="two-card waste"><svg class="two-ill" viewBox="0 0 120 76" aria-hidden="true">
+ <path d="M40 10l6 16h-12z" fill="#E0A458" transform="rotate(25 40 18)"/><circle cx="36" cy="10" r="7" fill="#F7A1B4"/>
+ <path d="M76 6l6 16h-12z" fill="#E0A458" transform="rotate(-20 76 14)"/><circle cx="79" cy="6" r="7" fill="#9BE0C8"/>
+ <path d="M56 16q2 6 0 10" stroke="#F7A1B4" stroke-width="3" fill="none" stroke-linecap="round"/>
+ <rect x="30" y="28" width="60" height="8" rx="3" fill="#6B7280"/><rect x="52" y="23" width="16" height="6" rx="2" fill="#6B7280"/>
+ <path d="M34 36h52l-5 38H39z" fill="#9CA3AF" stroke="#1F2A44" stroke-width="2" stroke-linejoin="round"/>
+ <path d="M48 44v24M60 44v24M72 44v24" stroke="#6B7280" stroke-width="2.5" stroke-linecap="round"/></svg><h3>🗑️ 売れ残り（用意しすぎ）</h3>
+      <div class="pic customers"><span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><i class="c-waste"></i><i class="c-waste"></i><i class="c-waste"></i><i class="c-waste"></i><i class="c-waste"></i></div>
+      <p class="pic-cap">13個用意 → 8人に売れて、5個が残った</p>
+      <p>仕入れたのに売れなかったアイスは捨てることになり、<b>材料費がむだ</b>になります。</p></div>
+     <div class="two-card lost"><svg class="two-ill" viewBox="0 0 120 76" aria-hidden="true">
+ <use href="#mini-stand" x="72" y="24" width="48" height="44"/>
+ <use href="#ic-person" x="38" y="46" width="15" height="20" fill="#2E9C7A"/><use href="#ic-person" x="54" y="46" width="15" height="20" fill="#2E9C7A"/>
+ <use href="#ic-person" x="6" y="46" width="15" height="20" fill="#D93A55"/>
+ <path d="M35 55h-11m0 0l4-4m-4 4l4 4" stroke="#D93A55" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="M2 20h26v12H14l-4 5v-5H2z" fill="#fff" stroke="#1F2A44" stroke-width="1.5" stroke-linejoin="round"/><text x="15" y="29" text-anchor="middle" font-size="9" font-weight="700" fill="#1F2A44">…</text>
+ <rect x="0" y="66" width="120" height="3" rx="1.5" fill="#E5B6BF"/></svg><h3>🚶 売り逃し（用意が足りない）</h3>
+      <div class="pic customers"><span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-sold"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-lost"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-lost"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-lost"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-lost"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span><span class="p-lost"><svg viewBox="0 0 16 21" aria-hidden="true"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg></span></div>
+      <p class="pic-cap">13人来た → 8人にしか売れず、5人が帰った</p>
+      <p>アイスや人手が足りないと、お客さんが帰ってしまいます。<b>もらえたはずのお金を逃し</b>、お店の評判も下がって次の日のお客さんが減ります。</p></div>
+    </div>
+    <p class="s-note center">何人来そうかを予想して、<b>ちょうどいい数</b>を用意するのが店長のうでの見せどころ！</p>
+   </section>
+
+   <section class="slide">
+    <p class="s-kicker">さいごに</p>
+    <h2>理解チェック</h2>
+    <p class="s-lead">2問とも正解したら、ゲームスタート！</p>
+    <div class="quiz" data-q="0">
+     <p class="qz-q">Q1. アイスを400円で50個売りました。かかったお金は合計15,000円です。利益はいくら？</p>
+     <div class="qz-opts">
+      <button data-a="0">35,000円</button><button data-a="1" data-ok>5,000円</button><button data-a="2">20,000円</button>
+     </div>
+     <p class="qz-fb" data-ok-text="正解！ 売上は400円×50個＝20,000円。20,000円−15,000円＝5,000円です。" data-ng-text="ざんねん。まず売上（400円×50個）を計算して、そこからかかったお金を引いてみよう。"></p>
+    </div>
+    <div class="quiz" data-q="1">
+     <p class="qz-q">Q2. 明日の天気予報は「晴れ・35℃」。どうするのがよさそう？</p>
+     <div class="qz-opts">
+      <button data-a="0">仕入れを減らして節約する</button><button data-a="1" data-ok>仕入れとアルバイトを多めにする</button><button data-a="2">いつもと同じにする</button>
+     </div>
+     <p class="qz-fb" data-ok-text="正解！ 暑い日はお客さんがたくさん来るので、アイスも人手も多めに用意しよう。" data-ng-text="ざんねん。35℃の日はお客さんがどうなるか、説明4を思い出してみよう。"></p>
+    </div>
+   </section>
+
+  </div>
+  <div class="tut-nav">
+   <button class="btn btn-sub" id="tutPrev">もどる</button>
+   <button class="btn btn-main" id="tutNext">つぎへ</button>
+  </div>
+ </div>
+</div>
+
+<div id="a4Wrap" aria-hidden="true"><div id="a4Report"></div></div>
+
+<script>window.FIREBASE_CONFIG=window.FIREBASE_CONFIG||null;</script>
+<script src="config.js" onerror="void 0"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+(function(){
+const START_CASH=50000, RENT=3000, WAGE=6000, STAFF_CAP=50, OWNER_CAP=30, BASE=100, BASE_PRICE=250;
+const WEATHER={
+  '晴れ':{m:1.1,ic:'☀️'}, 'くもり':{m:1.0,ic:'☁️'}, '雨':{m:0.6,ic:'☔'}
+};
+// 全員同じ条件で比べられるよう、天気は固定のシナリオ
+const DAYS=[
+  {fc:'晴れ', fcT:28, act:'晴れ', t:29, ev:1, news:''},
+  {fc:'雨', fcT:20, act:'雨', t:19, ev:1, news:''},
+  {fc:'晴れ', fcT:33, act:'晴れ', t:35, ev:1, news:'🥵 猛暑日になりそう！ 熱中症に注意とニュースで言っている。'},
+  {fc:'くもり', fcT:26, act:'くもり', t:25, ev:1.6, news:'🎆 今夜は近くの河川敷で花火大会！ いつもより人出が多くなりそう。'},
+  {fc:'雨', fcT:26, act:'晴れ', t:30, ev:1, news:''}
+];
+const LOCS=[
+  {name:'繁華街', ic:'🏙️', rent:5000, m:1.3, el:220, rain:0.5, desc:'人通りが多く、高めの値段でも売れやすい。ただし雨の日は人がいなくなる。'},
+  {name:'商店街', ic:'🏪', rent:3000, m:1.0, el:200, rain:1.0, desc:'人通りはふつう。天気の影響もふつう。'},
+  {name:'家の前', ic:'🏠', rent:0, m:0.5, el:160, rain:1.4, desc:'場所代は0円。お客さんは少なく値段にきびしいが、近所の常連さんは雨でも来てくれる。'}
+];
+const ADS=[
+  {cost:0, m:1.0, label:'なし', sub:'0円'},
+  {cost:2000, m:1.25, label:'チラシ', sub:'2,000円'},
+  {cost:5000, m:1.5, label:'SNS広告', sub:'5,000円'}
+];
+const $=id=>document.getElementById(id);
+const yen=n=>(n<0?'−':'')+Math.abs(Math.round(n)).toLocaleString('ja-JP')+'円';
+const unitCost=s=>s>=100?65:80;
+// 気温が上がるほどアイスが欲しくなる（18℃で0.4倍、25℃で約1倍、35℃で約1.8倍）
+const tempF=t=>Math.max(0.2,Math.min(2.0,0.4+(t-18)*0.08));
+
+let S;
+function reset(){
+  S={name:'', cash:START_CASH, rep:1.0, day:0, hist:[], d:{loc:1, price:300, stock:80, staff:1, ad:0}};
+}
+reset();
+
+function show(id){
+  ['scStart','scLobby','scDecide','scResult','scFinal'].forEach(x=>$(x).classList.toggle('hidden',x!==id));
+  $('status').classList.toggle('hidden',id==='scStart');
+  window.scrollTo(0,0);
+}
+function repStars(r){
+  const n=r>=1.15?5:r>=1.05?4:r>=0.95?3:r>=0.82?2:1;
+  return '★'.repeat(n)+'☆'.repeat(5-n);
+}
+function renderStatus(){
+  $('shopName').textContent=S.name;
+  $('stCash').textContent=S.cash.toLocaleString('ja-JP');
+  $('stRep').textContent=repStars(S.rep);
+  $('stDays').innerHTML=DAYS.map((_,i)=>`<span class="${i<S.day?'done':i===S.day?'now':''}">${i+1}</span>`).join('');
+}
+
+/* ---------- decide ---------- */
+function renderAds(){
+  $('adOpts').innerHTML=ADS.map((a,i)=>`<button aria-pressed="${S.d.ad===i}" data-ad="${i}">${a.label}<br><small>${a.sub}</small></button>`).join('');
+  $('locOpts').innerHTML=LOCS.map((l,i)=>`<button aria-pressed="${S.d.loc===i}" data-loc="${i}">${l.ic} ${l.name}<br><small>${l.rent.toLocaleString('ja-JP')}円</small></button>`).join('');
+  $('hLoc').textContent=LOCS[S.d.loc].desc;
+}
+function costOf(d){
+  const mat=d.stock*unitCost(d.stock), staff=d.staff*WAGE, ad=ADS[d.ad].cost, rent=LOCS[d.loc].rent;
+  return {mat,staff,ad,rent,total:mat+staff+rent+ad};
+}
+function updatePlan(){
+  const d=S.d;
+  $('vPrice').textContent=d.price; $('rPrice').value=d.price;
+  $('vStock').textContent=d.stock; $('rStock').value=d.stock;
+  $('vStaff').textContent=d.staff; $('rStaff').value=d.staff;
+  const u=unitCost(d.stock);
+  $('hStock').textContent=`今の単価：1個${u}円（100個以上なら1個65円）`;
+  const cap=OWNER_CAP+d.staff*STAFF_CAP;
+  $('hStaff').textContent=`さばける人数：店長30人＋アルバイト${d.staff*STAFF_CAP}人 ＝ ${cap}人`;
+  const c=costOf(d);
+  $('pMat').textContent=yen(c.mat); $('pStaff').textContent=yen(c.staff);
+  $('pAd').textContent=yen(c.ad); $('pRent').textContent=yen(c.rent); $('pTotal').textContent=yen(c.total);
+  const be=Math.ceil(c.total/d.price), maxSell=Math.min(d.stock,cap);
+  $('pBreak').textContent=be+'個';
+  $('pMax').textContent=`最大で売れるのは ${maxSell}個（在庫${d.stock}個と、さばける人数${cap}人の少ない方）`;
+  const w=$('pWarn'); let msg='';
+  if(c.total>S.cash) msg=`所持金が${yen(c.total-S.cash)}足りません。仕入れや人数を減らしてください。`;
+  else if(d.stock===0) msg='仕入れが0個だと何も売れません。';
+  else if(be>maxSell) msg='全部売れても元が取れない作戦です。本当にこれでいい？';
+  w.textContent=msg; w.classList.toggle('hidden',!msg);
+  $('btnOpen').disabled=c.total>S.cash||d.stock===0;
+  renderAds();
+}
+function renderDecide(){
+  const day=DAYS[S.day];
+  $('dTitle').textContent=`${S.day+1}日目`;
+  $('dFcIcon').textContent=WEATHER[day.fc].ic;
+  $('dFcText').textContent=day.fc;
+  $('dFcTemp').textContent=day.fcT;
+  $('restBox').classList.toggle('hidden',day.fc!=='雨'); resetRest();
+  $('dNews').textContent=day.news; $('dNews').classList.toggle('hidden',!day.news);
+  renderStatus(); updatePlan(); show('scDecide');
+}
+const LIM={price:[100,600],stock:[0,300],staff:[0,5]};
+document.addEventListener('click',e=>{
+  const st=e.target.closest('[data-step]');
+  if(st){const k=st.dataset.step, v=S.d[k]+Number(st.dataset.d);
+    S.d[k]=Math.max(LIM[k][0],Math.min(LIM[k][1],v)); updatePlan(); return;}
+  const ad=e.target.closest('[data-ad]');
+  if(ad){S.d.ad=Number(ad.dataset.ad); updatePlan(); return;}
+  const lc=e.target.closest('[data-loc]');
+  if(lc){S.d.loc=Number(lc.dataset.loc); updatePlan();}
+});
+[['rPrice','price'],['rStock','stock'],['rStaff','staff']].forEach(([id,k])=>{
+  $(id).addEventListener('input',e=>{S.d[k]=Number(e.target.value); updatePlan();});
+});
+
+/* ---------- simulate ---------- */
+/*CORE-RUN-START*/
+function runDay(d,di,rep){
+  const day=DAYS[di], w=WEATHER[day.act], L=LOCS[d.loc];
+  const priceF=Math.exp(-(d.price-BASE_PRICE)/L.el);
+  const locF=L.m*(day.act==='雨'?L.rain:1);
+  const demand=Math.max(0,Math.round(BASE*priceF*tempF(day.t)*w.m*day.ev*ADS[d.ad].m*rep*locF));
+  const cap=OWNER_CAP+d.staff*STAFF_CAP;
+  const sold=Math.min(demand,d.stock,cap);
+  const c=costOf(d), revenue=sold*d.price, profit=revenue-c.total;
+  const lost=demand-sold, waste=d.stock-sold;
+  const lostByStock=lost>0 && d.stock<=cap, lostByCap=lost>0 && cap<d.stock;
+  let nrep=rep;
+  if(demand>0 && lost/demand>0.2) nrep=Math.max(0.7,+(rep-0.1).toFixed(2));
+  else if(lost===0 && demand>0) nrep=Math.min(1.2,+(rep+0.05).toFixed(2));
+  const r={day:di+1, weather:day.act, fc:day.fc, t:day.t, fcT:day.fcT, loc:d.loc, price:d.price, stock:d.stock, staff:d.staff, ad:d.ad,
+    demand, sold, lost, waste, revenue, cost:c, profit, lostByStock, lostByCap, repBefore:rep, repAfter:nrep, cap};
+  return {r, delta:profit, rep:nrep};
+}
+function restRecord(d,di,rep,extra){
+  const day=DAYS[di], est=runDay(d,di,rep).r;
+  const r=Object.assign({day:di+1, weather:day.act, fc:day.fc, t:day.t, fcT:day.fcT, closed:true, loc:d.loc,
+    price:0, stock:0, staff:0, ad:0, demand:0, sold:0, lost:0, waste:0, revenue:0,
+    cost:{mat:0,staff:0,ad:0,rent:0,total:0}, profit:0, repBefore:rep, repAfter:rep,
+    ifPlan:{loc:d.loc,price:d.price,stock:d.stock,staff:d.staff,ad:d.ad}, ifDemand:est.demand, ifProfit:est.profit}, extra||{});
+  return {r, delta:0, rep};
+}
+/*CORE-RUN-END*/
+function restDay(){
+  const o=restRecord(S.d,S.day,S.rep); S.hist.push(o.r); return o.r;
+}
+function simulate(){
+  const o=runDay(S.d,S.day,S.rep); S.rep=o.rep; S.cash+=o.delta; S.hist.push(o.r); return o.r;
+}
+function feedback(r){
+  const f=[];
+  if(r.profit<0) f.push('赤字でした。売上より、かかったお金のほうが多かったということです。');
+  if(r.waste>=20) f.push(`${r.waste}個が売れ残って廃棄。材料費${yen(r.waste*unitCost(r.stock))}がむだになりました。仕入れすぎかも？`);
+  if(r.lostByStock) f.push(`材料が足りず、${r.lost}人が買えずに帰りました。もっと仕入れていれば売上は増えたかも。`);
+  if(r.lostByCap) f.push(`売り場の手が足りず、${r.lost}人が行列をあきらめて帰りました。人手不足です。`);
+  if(r.repAfter<r.repBefore) f.push('買えなかった人が多かったので、お店の評判が下がりました。明日のお客さんが少し減ります。');
+  if(r.repAfter>r.repBefore) f.push('来たお客さん全員に売れたので、評判が上がりました。');
+  if(r.fc!==r.weather||Math.abs(r.t-r.fcT)>=2) f.push(`予報は「${r.fc}・${r.fcT}℃」でしたが、実際は「${r.weather}・${r.t}℃」。予報は外れることもあります。`);
+  if(r.t>=33) f.push(`${r.t}℃の猛暑日。アイスが飛ぶように売れる日は、在庫と人手の両方が足りるかがカギです。`);
+  if(r.t<=20) f.push(`${r.t}℃と涼しい日。アイスを食べたい人はぐっと減ります。こういう日は無理に仕入れないのも作戦です。`);
+  if(r.staff>0 && r.sold<=OWNER_CAP+(r.staff-1)*STAFF_CAP && r.sold>0) f.push('アルバイトが1人少なくても同じ数を売れました。人件費を削れたかも。');
+  if(!f.length) f.push('ちょうどいい作戦でした！ この感覚を覚えておこう。');
+  return f;
+}
+function renderResult(r){
+  $('rTitle').textContent=`${r.day}日目の結果`;
+  $('rWIcon').textContent=WEATHER[r.weather].ic; $('rWText').textContent=r.weather; $('rTemp').textContent=r.t;
+  document.querySelectorAll('[data-next]').forEach(b=>b.textContent=S.day>=DAYS.length-1?'最終結果を見る':'次の日へ');
+  document.querySelectorAll('[data-wait]').forEach(w=>w.classList.add('hidden')); $('rRank').classList.add('hidden');
+  if(r.closed){ renderClosed(r); return; }
+  $('rPanelTitle').textContent='今日のお客さん'; $('rLegend').classList.remove('hidden');
+  const pos=r.profit>=0;
+  $('receipt').innerHTML=`
+    <h3>${escapeHtml(S.name)}</h3>
+    <div class="c">${r.day}日目　${r.weather}　${r.t}℃　${LOCS[r.loc].name}</div>
+    <div class="stamp ${pos?'pos':'neg'}">${pos?'黒字':'赤字'}</div>
+    <hr>
+    <div class="row"><span>アイス ${r.price}円×${r.sold}</span><span>${yen(r.revenue)}</span></div>
+    <div class="row"><span>売上</span><span>${yen(r.revenue)}</span></div>
+    <hr>
+    <div class="row"><span>材料 ${unitCost(r.stock)}円×${r.stock}</span><span class="neg">−${yen(r.cost.mat)}</span></div>
+    <div class="row"><span>アルバイト ${r.staff}人</span><span class="neg">−${yen(r.cost.staff)}</span></div>
+    <div class="row"><span>出店料（${LOCS[r.loc].name}）</span><span class="neg">−${yen(r.cost.rent)}</span></div>
+    <div class="row"><span>宣伝（${ADS[r.ad].label}）</span><span class="neg">−${yen(r.cost.ad)}</span></div>
+    <hr>
+    <div class="row"><span>今日の利益</span></div>
+    <div class="big ${pos?'':'neg'}">${pos?'+':''}${yen(r.profit)}</div>
+    <hr>
+    <div class="c">所持金 ${yen(S.cash)}</div>`;
+  const dots=[];
+  const PERSON='<svg viewBox="0 0 16 21"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg>';
+  for(let i=0;i<r.sold;i++) dots.push(`<span class="p-sold">${PERSON}</span>`);
+  for(let i=0;i<r.lost;i++) dots.push(`<span class="p-lost">${PERSON}</span>`);
+  for(let i=0;i<r.waste;i++) dots.push('<i class="c-waste"></i>');
+  $('rDots').innerHTML=dots.join('');
+  $('rSummary').textContent=`来たお客さん ${r.demand}人 ／ 売れた数 ${r.sold}個 ／ 買えずに帰った人 ${r.lost}人 ／ 売れ残り ${r.waste}個`;
+  $('rFeedback').innerHTML=feedback(r).map(t=>`<li>${t}</li>`).join('');
+  renderStatus(); show('scResult');
+}
+function renderClosed(r){
+  const pl=r.ifPlan, ip=r.ifProfit;
+  $('receipt').innerHTML=`
+    <h3>${escapeHtml(S.name)}</h3>
+    <div class="c">${r.day}日目　${r.weather}　${r.t}℃</div>
+    <div class="stamp rest">休業</div>
+    <hr>
+    <div class="rest-title">本日はお休みしました</div>
+    <div class="row"><span>売上</span><span>0円</span></div>
+    <div class="row"><span>かかったお金</span><span>0円</span></div>
+    <hr>
+    <div class="row"><span>今日の利益</span></div>
+    <div class="big">±0円</div>
+    <hr>
+    <div class="c">所持金 ${yen(S.cash)}</div>`;
+  $('rPanelTitle').textContent='もし営業していたら…';
+  $('rLegend').classList.add('hidden');
+  const PERSON='<svg viewBox="0 0 16 21"><circle cx="8" cy="4.2" r="3.9"/><path d="M1.5 21v-6.5a6.5 6.5 0 0 1 13 0V21z"/></svg>';
+  $('rDots').innerHTML=Array.from({length:r.ifDemand},()=>`<span class="p-ghost">${PERSON}</span>`).join('');
+  $('rSummary').innerHTML=`<span class="if-box" style="display:block">休む前に決めていた作戦（${LOCS[pl.loc].name}・${pl.price}円・仕入れ${pl.stock}個・アルバイト${pl.staff}人）で営業していたら、お客さんは約${r.ifDemand}人。利益は約<b>${ip>=0?'+':'−'}${Math.abs(ip).toLocaleString('ja-JP')}円</b>でした。</span>`;
+  const f=[];
+  if(r.noPlan) f.push(r.noPlan==='cash'?'作戦にかかるお金が所持金より多かったので、この日は休業になりました。':r.noPlan==='late'?'この日はまだ対戦に参加していなかったので、休業あつかいです。':'時間内に作戦が提出されなかったので、この日は休業になりました。');
+  if(ip>0) f.push(`営業していれば、約${yen(ip)}の利益が出ていたかもしれません。休めば損はしないけれど、もうけのチャンスも0円になります。`);
+  else f.push(`営業していたら約${yen(-ip)}の赤字でした。休んだのは正解です！`);
+  if(r.fc!==r.weather||Math.abs(r.t-r.fcT)>=2) f.push(`予報は「${r.fc}・${r.fcT}℃」でしたが、実際は「${r.weather}・${r.t}℃」。予報は外れることもあります。`);
+  f.push('休んだ日は、お店の評判は変わりません。');
+  $('rFeedback').innerHTML=f.map(t=>`<li>${t}</li>`).join('');
+  renderStatus(); show('scResult');
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ---------- final ---------- */
+function title(p){
+  if(p>=80000) return '伝説の経営者';
+  if(p>=55000) return '行列のできる名店';
+  if(p>=30000) return '地元で人気のお店';
+  if(p>=0) return 'がんばる新人店長';
+  return '修行中の店長';
+}
+function chart(){
+  const W=640,H=260,pad=40,n=S.hist.length;
+  const vals=S.hist.map(h=>h.profit);
+  const mx=Math.max(1000,...vals.map(Math.abs));
+  const zero=H/2, scale=(H/2-pad)/mx, bw=(W-pad*2)/n;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="毎日の利益の棒グラフ">`;
+  s+=`<line x1="${pad}" y1="${zero}" x2="${W-pad}" y2="${zero}" stroke="var(--sub)" stroke-width="1.5"/>`;
+  s+=`<text x="${pad-6}" y="${zero+4}" text-anchor="end" font-size="12" fill="var(--sub)">0</text>`;
+  vals.forEach((v,i)=>{
+    const h=Math.abs(v)*scale, x=pad+i*bw+bw*0.2, y=v>=0?zero-h:zero;
+    if(S.hist[i].closed){ s+=`<text x="${x+bw*0.3}" y="${zero-8}" text-anchor="middle" font-size="14" fill="var(--sub)">☂️ 休業</text>`; }
+    else{
+    s+=`<rect x="${x}" y="${y}" width="${bw*0.6}" height="${Math.max(h,1)}" rx="6" fill="${v>=0?'var(--mint)':'var(--berry)'}"/>`;
+    s+=`<text x="${x+bw*0.3}" y="${v>=0?y-6:y+h+16}" text-anchor="middle" font-size="13" fill="var(--ink)">${(v>=0?'+':'−')+Math.abs(v).toLocaleString('ja-JP')}</text>`;
+    }
+    s+=`<text x="${x+bw*0.3}" y="${H-8}" text-anchor="middle" font-size="13" fill="var(--sub)">${i+1}日目 ${WEATHER[S.hist[i].weather].ic}${S.hist[i].t}℃</text>`;
+  });
+  return s+'</svg>';
+}
+function corr(a,b){
+  const n=a.length, ma=a.reduce((x,y)=>x+y,0)/n, mb=b.reduce((x,y)=>x+y,0)/n;
+  let sab=0,saa=0,sbb=0;
+  for(let i=0;i<n;i++){sab+=(a[i]-ma)*(b[i]-mb);saa+=(a[i]-ma)**2;sbb+=(b[i]-mb)**2;}
+  return (saa&&sbb)?sab/Math.sqrt(saa*sbb):0;
+}
+function analyze(){
+  const h=S.hist, sum=k=>h.reduce((a,x)=>a+k(x),0);
+  const open=h.filter(x=>!x.closed), closed=h.filter(x=>x.closed);
+  const W=sum(x=>x.waste), L=sum(x=>x.lost);
+  const avgP=open.length?open.reduce((a,x)=>a+x.price,0)/open.length:0;
+  const rain=h[1], hot=h[2], fest=h[3];
+  const r=corr(h.map(x=>x.stock),h.map(x=>x.fcT));
+  const wasteYen=sum(x=>x.waste*unitCost(x.stock));
+  const overStaff=open.filter(x=>x.staff>0 && x.sold<=OWNER_CAP+(x.staff-1)*STAFF_CAP).length;
+  const good=[], next=[];
+  const missed=closed.filter(x=>x.ifProfit>0).sort((a,b)=>b.ifProfit-a.ifProfit)[0];
+  const saved=closed.filter(x=>x.ifProfit<=0).sort((a,b)=>a.ifProfit-b.ifProfit)[0];
+  if(saved) good.push(`${saved.day}日目は「${saved.fc}」の予報でお店を休み、約${yen(-saved.ifProfit)}の赤字をさけました。`);
+  if(missed) next.push(`${missed.day}日目は「${missed.fc}」の予報で休みましたが、実際は${missed.weather}・${missed.t}℃。営業していれば約${yen(missed.ifProfit)}の利益が出ていたかもしれません。`);
+  if(open.length===h.length && open.every(x=>x.profit>=0)) good.push('5日間すべて黒字！ どの日も、かかったお金より多く売り上げることができました。');
+  else if(open.length && closed.length && open.every(x=>x.profit>=0)) good.push('営業した日はすべて黒字でした。');
+  if(!rain.closed && rain.profit>=0 && rain.loc!==2) good.push(`雨の日（${rain.t}℃）も黒字を守れました。仕入れや人数を控えめにした判断が生きています。`);
+  if(!hot.closed && hot.lost<=10 && hot.profit>=15000) good.push(`${hot.t}℃の猛暑日にしっかり準備して、1日で${yen(hot.profit)}の利益を出せました。`);
+  if(r>=0.6) good.push('予報の気温が高い日ほど多く仕入れていて、気温に合わせた準備ができていました。');
+  if(!fest.closed && fest.ad>0 && fest.lost<=15) good.push('花火大会の日に宣伝を使い、増えたお客さんにもしっかり売ることができました。');
+  if(!rain.closed && rain.loc===2 && rain.profit>=0) good.push('雨の日に家の前で店を開き、場所代をかけずに損を防げました。');
+  if(!hot.closed && hot.loc===0 && hot.profit>=25000) good.push(`猛暑日に繁華街を選び、人通りの多さを生かして${yen(hot.profit)}かせぎました。`);
+  if(new Set(open.map(x=>x.loc)).size>=2 && rain.loc!==0 && hot.loc===0 && !hot.closed) good.push('天気や気温に合わせて、出店場所を使い分けられていました。');
+  if(open.length && W<=20) good.push(`売れ残りが合計${W}個だけで、材料をほとんどむだにしませんでした。`);
+  if(open.length && L<=20) good.push(`買えずに帰ったお客さんが${L}人だけで、売るチャンスをほとんど逃しませんでした。`);
+  if(S.rep>=1.1) good.push('お客さんをがっかりさせず、お店の評判を上げることができました。');
+  if(!rain.closed && rain.loc===0 && rain.profit<0) next.push(`雨の日に繁華街で${yen(-rain.profit)}の赤字。繁華街は雨になると人通りがぐっと減り、高い場所代だけが残ります。`);
+  else if(!rain.closed && rain.profit<0) next.push(`雨の日（予報は${rain.fc}・${rain.fcT}℃）に${yen(-rain.profit)}の赤字。天気が悪い日は、仕入れや人数を減らすか、休むのも作戦です。`);
+  if(!hot.closed && hot.lost>20) next.push(`猛暑日に${hot.lost}人を売り逃しました。暑い予報の日は、仕入れとアルバイトを多めに準備しよう。`);
+  if(W>60) next.push(`売れ残りが合計${W}個、材料費にして約${yen(wasteYen)}がむだに。「何人来そうか」を予想してから仕入れよう。`);
+  if(L>60) next.push(`買えずに帰ったお客さんが合計${L}人。在庫切れか人手不足で、売上のチャンスを逃しています。`);
+  if(overStaff>=2) next.push(`アルバイトが1人多かった日が${overStaff}日ありました。人件費を${yen(overStaff*WAGE)}減らせたかもしれません。`);
+  if(r<0.3) next.push('気温が変わっても仕入れる数があまり変わっていません。予報の気温を見て、仕入れる数を変えてみよう。');
+  if(open.length && avgP<=220) next.push(`平均価格は約${Math.round(avgP)}円と安め。もう少し値上げしても、利益は増えたかもしれません。`);
+  if(avgP>=470) next.push(`平均価格は約${Math.round(avgP)}円と高め。お客さんが減りすぎていないか、価格を下げた日と比べてみよう。`);
+  if(open.length>=3 && open.every(x=>x.loc===2)) next.push('営業した日はずっと家の前でした。場所代はかからないけど、お客さんは少なめ。晴れて暑い日は繁華街に出てみよう。');
+  if(open.length>=3 && open.every(x=>x.loc===1)) next.push('営業した日はずっと商店街でした。天気に合わせて場所を変えると、もっと利益が出たかもしれません。');
+  if(open.length>=3 && open.every(x=>x.ad===0)) next.push('宣伝を一度も使いませんでした。人出が多い日や暑い日に宣伝すると、どうなるか試してみよう。');
+  if(!good.length) good.push('5日間、最後まで経営をやりきりました。記録表から、いちばんうまくいった日を探してみよう。');
+  if(!next.length) next.push('ほぼ理想的な経営です。価格を50円だけ変えたら利益がどうなるか、もう一度試してみよう。');
+  let type, desc;
+  if(closed.length>=2){type='☂️ 安全第一タイプ';desc='あぶない日は無理をしないスタイル。損は少ないが、もうけのチャンスを逃すことも。';}
+  else if(avgP>=450){type='💎 高級路線タイプ';desc='高めの価格で、1個あたりのもうけを大きくするスタイル。';}
+  else if(open.length && avgP<=220){type='🛒 薄利多売タイプ';desc='安い価格で、たくさん売ってかせぐスタイル。';}
+  else if(W>L*1.5 && W>30){type='🚀 攻めの仕入れタイプ';desc='チャンスを逃さないよう多めに準備するスタイル。売れ残りのリスクと隣り合わせ。';}
+  else if(L>W*1.5 && L>30){type='🛡️ 慎重派タイプ';desc='むだを出さないよう控えめに準備するスタイル。売り逃しが増えやすい。';}
+  else {type='⚖️ バランスタイプ';desc='仕入れ・人手・価格のバランスをとるスタイル。';}
+  return {type, desc, good:good.slice(0,3), next:next.slice(0,3)};
+}
+const WCOL={'晴れ':'#F08A3C','くもり':'#8A97A8','雨':'#4A86C8'};
+function niceTicks(min,max,n){
+  if(min===max){min-=1;max+=1;}
+  const raw=(max-min)/n, mag=Math.pow(10,Math.floor(Math.log10(raw)));
+  const step=[1,2,2.5,5,10].map(m=>m*mag).find(st=>st>=raw);
+  const lo=Math.floor(min/step)*step, hi=Math.ceil(max/step)*step, t=[];
+  for(let v=lo;v<=hi+step/2;v+=step) t.push(+v.toFixed(6));
+  return t;
+}
+function corrLabel(r){
+  const a=Math.abs(r);
+  if(a<0.2) return {txt:'ほとんど相関なし',cls:'b-none',kind:'none'};
+  const st=a>=0.7?'強い':a>=0.4?'中くらいの':'弱い';
+  return r>0?{txt:st+'正の相関',cls:'b-pos',kind:'pos'}:{txt:st+'負の相関',cls:'b-neg',kind:'neg'};
+}
+function scatter(pts,xl,yl,fx,fy,zeroY){
+  const W=520,H=300,L=64,R=18,T=14,B=46;
+  const xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+  const xt=niceTicks(Math.min(...xs),Math.max(...xs),4);
+  const yt=niceTicks(zeroY?Math.min(0,...ys):Math.min(...ys),Math.max(...ys),4);
+  const x0=xt[0],x1=xt[xt.length-1],y0=yt[0],y1=yt[yt.length-1];
+  const X=v=>L+(v-x0)/(x1-x0)*(W-L-R), Y=v=>H-B-(v-y0)/(y1-y0)*(H-T-B);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${xl}と${yl}の散布図">`;
+  yt.forEach(v=>{s+=`<line x1="${L}" y1="${Y(v)}" x2="${W-R}" y2="${Y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-8}" y="${Y(v)+4}" text-anchor="end" font-size="12" fill="var(--sub)">${fy(v)}</text>`;});
+  xt.forEach(v=>{s+=`<line x1="${X(v)}" y1="${T}" x2="${X(v)}" y2="${H-B}" stroke="var(--line)" stroke-width="1" opacity=".5"/><text x="${X(v)}" y="${H-B+18}" text-anchor="middle" font-size="12" fill="var(--sub)">${fx(v)}</text>`;});
+  s+=`<path d="M${L} ${T}V${H-B}H${W-R}" stroke="var(--sub)" stroke-width="1.5" fill="none"/>`;
+  s+=`<text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">${xl} →</text>`;
+  s+=`<text x="14" y="${(T+H-B)/2}" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)" transform="rotate(-90 14 ${(T+H-B)/2})">${yl} →</text>`;
+  const n=pts.length, mx=xs.reduce((a,b)=>a+b,0)/n, my=ys.reduce((a,b)=>a+b,0)/n;
+  const sxx=xs.reduce((a,x)=>a+(x-mx)**2,0);
+  if(n>=3 && sxx>0){
+    const b=xs.reduce((a,x,i)=>a+(x-mx)*(ys[i]-my),0)/sxx, a=my-b*mx;
+    const ya=a+b*x0, yb=a+b*x1, cl=v=>Math.max(y0,Math.min(y1,v));
+    s+=`<line x1="${X(x0)}" y1="${Y(cl(ya))}" x2="${X(x1)}" y2="${Y(cl(yb))}" stroke="var(--berry)" stroke-width="2.5" stroke-dasharray="7 5" opacity=".85"/>`;
+  }
+  pts.forEach(p=>{s+=`<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="13" fill="${WCOL[p.w]}" stroke="#fff" stroke-width="2.5"/><text x="${X(p.x)}" y="${Y(p.y)+5}" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">${p.d}</text>`;});
+  return s+'</svg>';
+}
+function renderCorr(){
+  const open=S.hist.filter(h=>!h.closed), closed=S.hist.filter(h=>h.closed);
+  const num=v=>Math.round(v).toLocaleString('ja-JP');
+  const defs=[
+    {t:'気温 × 来客数', x:h=>h.t, y:h=>h.demand, xl:'最高気温（℃）', yl:'来客数（人）', fx:v=>v+'℃', fy:v=>num(v), z:true,
+     pos:'気温が高い日ほど、お客さんが多く来る傾向があります。アイスは暑い日ほど「食べたい」と思う人が増えるからです。',
+     neg:'気温が高い日ほどお客さんが少ない、という意外な結果です。値段や場所など、ほかの条件の影響が大きかったのかもしれません。'},
+    {t:'気温 × 売上', x:h=>h.t, y:h=>h.revenue, xl:'最高気温（℃）', yl:'売上（円）', fx:v=>v+'℃', fy:v=>num(v), z:true,
+     pos:'気温が高い日ほど売上も大きい傾向があります。ただし売上は、在庫や人手が足りたかどうかにも左右されます。',
+     neg:'気温が高いのに売上が小さい日がありました。在庫切れや人手不足で、売るチャンスを逃していなかったか確かめてみよう。'},
+    {t:'値段 × 来客数', x:h=>h.price, y:h=>h.demand, xl:'値段（円）', yl:'来客数（人）', fx:v=>num(v)+'円', fy:v=>num(v), z:true,
+     pos:'値段が高い日ほどお客さんが多い、という結果になりました。でも「高くしたから客が増えた」とは限りません。暑い日にだけ値上げしていたなら、客が増えた本当の理由は気温かもしれません（注意1）。',
+     neg:'値段が高い日ほど、お客さんが少ない傾向があります。高すぎると「買うのをやめよう」と思う人が増えるからです。'},
+    {t:'来客数 × 利益', x:h=>h.demand, y:h=>h.profit, xl:'来客数（人）', yl:'利益（円）', fx:v=>num(v), fy:v=>num(v), z:true,
+     pos:'お客さんが多い日ほど、利益も大きい傾向があります。お客さんを集めることが、もうけにつながっています。',
+     neg:'お客さんが多いのに利益が小さい日があります。売り逃しや、アルバイト代・場所代などの費用が大きすぎなかったか見直してみよう。'}
+  ];
+  const cards=defs.map(d=>{
+    if(open.length<3) return `<div class="corr-card"><h4>${d.t}</h4><p>営業した日が${open.length}日だけなので、散布図をかくにはデータが足りません（3日分以上必要です）。</p></div>`;
+    const pts=open.map(h=>({x:d.x(h),y:d.y(h),d:h.day,w:h.weather}));
+    const xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+    let msg, badge;
+    if(Math.max(...xs)===Math.min(...xs)){
+      badge='<span class="badge b-none">計算できません</span>';
+      msg=`横軸の値が毎日同じ（${d.fx(xs[0])}）だったので、関係を調べられませんでした。相関を調べるには、値を変えてデータをとる必要があります。`;
+    }else{
+      const r=corr(xs,ys), lb=corrLabel(r);
+      badge=`<span class="badge ${lb.cls}">r = ${r.toFixed(2)}</span><span class="badge ${lb.cls}">${lb.txt}</span>`;
+      msg=lb.kind==='pos'?d.pos:lb.kind==='neg'?d.neg:`${d.t.split(' × ')[0]}と${d.t.split(' × ')[1]}の間には、はっきりした関係は見えませんでした。ほかの条件の影響が大きかったのかもしれません。`;
+    }
+    return `<div class="corr-card"><h4>${d.t}</h4>${scatter(pts,d.xl,d.yl,d.fx,d.fy,d.z)}<div class="corr-r">${badge}</div><p>${msg}</p></div>`;
+  });
+  $('corrGrid').innerHTML=cards.join('');
+  $('corrNote').textContent=closed.length?`※ 休業した日（${closed.map(h=>h.day+'日目').join('・')}）は、お客さんも売上も0なので、グラフと相関係数の計算にはふくめていません。`:'';
+}
+function renderFinal(){
+  $('fRank').classList.add('hidden');
+  const fb=analyze();
+  $('fbType').textContent=fb.type; $('fbTypeDesc').textContent=fb.desc;
+  $('fbGood').innerHTML=fb.good.map(t=>`<li>${t}</li>`).join('');
+  $('fbNext').innerHTML=fb.next.map(t=>`<li>${t}</li>`).join('');
+  const p=S.cash-START_CASH;
+  $('fTitle').textContent=title(p);
+  $('fShop').textContent=S.name;
+  $('fProfit').textContent=(p>=0?'+':'')+yen(p);
+  $('fCash').textContent=`元手 ${yen(START_CASH)} → 最終所持金 ${yen(S.cash)}`;
+  $('fChart').innerHTML=chart();
+  renderCorr();
+  const head='<tr><th>日</th><th>天気</th><th>気温</th><th>場所</th><th>価格</th><th>仕入れ</th><th>バイト</th><th>宣伝</th><th>客数</th><th>販売</th><th>売り逃し</th><th>売れ残り</th><th>売上</th><th>費用</th><th>利益</th></tr>';
+  $('fTable').innerHTML=head+S.hist.map(h=>h.closed?`<tr><td>${h.day}日目</td><td>${WEATHER[h.weather].ic}${h.weather}</td><td>${h.t}℃</td><td colspan="11" style="text-align:center;color:var(--sub)">☂️ 休業（営業していたら 利益 約${h.ifProfit>=0?'+':'−'}${Math.abs(h.ifProfit).toLocaleString('ja-JP')}円）</td><td>±0円</td></tr>`:`<tr><td>${h.day}日目</td><td>${WEATHER[h.weather].ic}${h.weather}</td><td>${h.t}℃</td><td>${LOCS[h.loc].ic}${LOCS[h.loc].name}</td><td>${h.price}</td><td>${h.stock}</td><td>${h.staff}</td><td>${ADS[h.ad].label}</td><td>${h.demand}</td><td>${h.sold}</td><td>${h.lost}</td><td>${h.waste}</td><td>${yen(h.revenue)}</td><td>${yen(h.cost.total)}</td><td style="font-weight:700;color:${h.profit>=0?'var(--mint)':'var(--berry)'}">${h.profit>=0?'+':''}${yen(h.profit)}</td></tr>`).join('');
+  S.day=DAYS.length; renderStatus(); show('scFinal');
+}
+
+/* ---------- flow ---------- */
+$('btnStart').addEventListener('click',()=>{
+  if(typeof battleOff==='function') battleOff();
+  reset(); S.name=($('inName').value.trim()||'わたしのアイス屋');
+  $('btnOpen').textContent='この作戦で営業する';
+  openTut(true);
+});
+/* ---------- tutorial ---------- */
+const slides=[...document.querySelectorAll('#tutBody .slide')];
+let tutI=0, tutFirst=true;
+function quizDone(){return [...document.querySelectorAll('.quiz')].every(q=>q.dataset.solved==='1');}
+function renderTut(){
+  slides.forEach((sl,i)=>sl.classList.toggle('on',i===tutI));
+  $('tutSteps').innerHTML=slides.map((_,i)=>`<span class="${i<=tutI?'on':''}"></span>`).join('');
+  $('tutPage').textContent=`${tutI+1} / ${slides.length}`;
+  $('tutClose').classList.toggle('hidden',tutFirst);
+  $('tutPrev').textContent=(tutI===0&&tutFirst)?'トップへ':'もどる';
+  $('tutPrev').style.visibility=(tutI===0&&(!tutFirst||B.on))?'hidden':'visible';
+  const last=tutI===slides.length-1;
+  $('tutNext').textContent=last?(tutFirst?'ゲームスタート！':'ゲームにもどる'):'つぎへ';
+  $('tutNext').disabled=last&&tutFirst&&!quizDone();
+  $('tutBody').scrollTop=0;
+}
+function openTut(first){
+  tutFirst=first; tutI=0;
+  if(first) document.querySelectorAll('.quiz').forEach(q=>{q.dataset.solved='';q.querySelectorAll('button').forEach(b=>b.className='');const f=q.querySelector('.qz-fb');f.textContent='';f.className='qz-fb';});
+  $('tut').classList.remove('hidden'); document.body.classList.add('tut-open'); renderTut();
+}
+function closeTut(){ $('tut').classList.add('hidden'); document.body.classList.remove('tut-open'); }
+$('tutNext').addEventListener('click',()=>{
+  if(tutI<slides.length-1){tutI++;renderTut();return;}
+  closeTut(); if(tutFirst){ if(B.on){B.shownKey='';applyBattle();} else renderDecide(); }
+});
+$('tutPrev').addEventListener('click',()=>{
+  if(tutI===0){ if(tutFirst&&!B.on){closeTut();show('scStart');} return; }
+  tutI--; renderTut();
+});
+$('tutClose').addEventListener('click',closeTut);
+$('btnRules').addEventListener('click',()=>openTut(false));
+function closeHome(){ $('homeModal').classList.add('hidden'); if($('tut').classList.contains('hidden')) document.body.classList.remove('tut-open'); }
+$('btnHome').addEventListener('click',()=>{
+  $('homeTitle').textContent=B.on?'クラス対戦からぬけますか？':'ゲームを中断しますか？';
+  $('homeText').textContent=B.on?'TOP画面に戻ります。同じルーム番号と班の名前を入れれば、続きから参加し直せます。':'TOP画面に戻ると、ここまでの記録（所持金・毎日の結果・ふりかえりの入力）は消えて、最初からやり直しになります。';
+  $('homeOk').textContent=B.on?'ぬけてTOPに戻る':'中断してTOPに戻る';
+  $('homeModal').classList.remove('hidden'); document.body.classList.add('tut-open'); $('homeCancel').focus(); });
+$('homeCancel').addEventListener('click',closeHome);
+$('homeModal').addEventListener('click',e=>{ if(e.target.id==='homeModal') closeHome(); });
+$('homeOk').addEventListener('click',()=>{
+  const wasBattle=B.on; battleOff();
+  const name=S.name; reset(); if(!wasBattle) $('inName').value=name;
+  document.querySelectorAll('.qs textarea').forEach(t=>t.value='');
+  $('pdfMsg').textContent=''; if(typeof resetRest==='function') resetRest();
+  closeTut(); $('homeModal').classList.add('hidden'); document.body.classList.remove('tut-open');
+  show('scStart');
+});
+document.querySelectorAll('.quiz').forEach(q=>{
+  q.addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b||q.dataset.solved==='1') return;
+    const f=q.querySelector('.qz-fb');
+    if(b.hasAttribute('data-ok')){ b.className='ok'; q.dataset.solved='1'; f.textContent=f.dataset.okText; f.className='qz-fb ok'; }
+    else { b.className='ng'; f.textContent=f.dataset.ngText; f.className='qz-fb ng'; }
+    renderTutNav();
+  });
+});
+function renderTutNav(){ const last=tutI===slides.length-1; $('tutNext').disabled=last&&tutFirst&&!quizDone(); }
+let tx=null;
+$('tutBody').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+$('tutBody').addEventListener('touchend',e=>{
+  if(tx===null) return; const dx=e.changedTouches[0].clientX-tx; tx=null;
+  if(e.target.closest('.quiz')) return;
+  if(dx<-70 && tutI<slides.length-1){tutI++;renderTut();}
+  else if(dx>70 && tutI>0){tutI--;renderTut();}
+});
+let restArm=false, restTimer=null;
+function resetRest(){ restArm=false; clearTimeout(restTimer); const b=$('btnRest'); b.textContent='☂️ 今日はお店を休む'; b.classList.remove('armed'); }
+$('btnRest').addEventListener('click',()=>{
+  if(!restArm){ restArm=true; const b=$('btnRest'); b.textContent='本当に休む？ もう一度押すと休みます'; b.classList.add('armed'); restTimer=setTimeout(resetRest,4000); return; }
+  resetRest(); if(B.on){submitPlan(true);return;} renderResult(restDay());
+});
+$('btnOpen').addEventListener('click',()=>{ if(costOf(S.d).total>S.cash) return; if(B.on){submitPlan(false);return;} renderResult(simulate()); });
+document.querySelectorAll('[data-next]').forEach(b=>b.addEventListener('click',()=>{
+  if(S.day>=DAYS.length-1){renderFinal();return;}
+  S.day++; renderDecide();
+}));
+/* ========== CLASS BATTLE ========== */
+const BATTLE_OK = !!(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.databaseURL) || /[?&]mock=1/.test(location.search);
+/*DB-START*/
+function loadScript(src){return new Promise((res,rej)=>{const t=document.createElement('script');t.src=src;t.onload=res;t.onerror=()=>rej(new Error('load '+src));document.head.appendChild(t);});}
+function makeMockDB(){
+  const KEY='iceMockDB', ch=('BroadcastChannel' in window)?new BroadcastChannel('iceMockDB'):null, subs=[];
+  const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))||{};}catch(e){return {};}};
+  const segs=p=>p.split('/').filter(Boolean);
+  const getAt=(t,p)=>segs(p).reduce((o,k)=>o==null?null:(o[k]===undefined?null:o[k]),t);
+  const setAt=(t,p,v)=>{const ks=segs(p);let o=t;ks.slice(0,-1).forEach(k=>{if(typeof o[k]!=='object'||o[k]===null)o[k]={};o=o[k];});if(v===null||v===undefined)delete o[ks[ks.length-1]];else o[ks[ks.length-1]]=JSON.parse(JSON.stringify(v));};
+  const fire=()=>{const t=load();subs.forEach(s=>s.cb(getAt(t,s.p)));};
+  const commit=t=>{localStorage.setItem(KEY,JSON.stringify(t));fire();if(ch)ch.postMessage(1);};
+  if(ch) ch.onmessage=fire; window.addEventListener('storage',e=>{if(e.key===KEY)fire();});
+  return {
+    on(p,cb){const s={p,cb};subs.push(s);setTimeout(()=>cb(getAt(load(),p)),0);return ()=>{const i=subs.indexOf(s);if(i>=0)subs.splice(i,1);};},
+    get(p){return Promise.resolve(getAt(load(),p));},
+    set(p,v){const t=load();setAt(t,p,v);commit(t);return Promise.resolve();},
+    update(p,obj){const t=load();Object.keys(obj).forEach(k=>setAt(t,p+'/'+k,obj[k]));commit(t);return Promise.resolve();},
+    onConn(cb){cb(true);}, offset(){return 0;}, mock:true
+  };
+}
+async function makeDB(){
+  if(/[?&]mock=1/.test(location.search)) return makeMockDB();
+  const V='10.12.2';
+  await loadScript(`https://www.gstatic.com/firebasejs/${V}/firebase-app-compat.js`);
+  await loadScript(`https://www.gstatic.com/firebasejs/${V}/firebase-database-compat.js`);
+  if(!firebase.apps.length) firebase.initializeApp(window.FIREBASE_CONFIG);
+  const db=firebase.database(); let off=0;
+  db.ref('.info/serverTimeOffset').on('value',s=>{off=s.val()||0;});
+  return {
+    on(p,cb){const r=db.ref(p), h=r.on('value',s=>cb(s.val()));return ()=>r.off('value',h);},
+    get(p){return db.ref(p).get().then(s=>s.val());},
+    set(p,v){return db.ref(p).set(v);},
+    update(p,obj){return db.ref(p).update(obj);},
+    onConn(cb){db.ref('.info/connected').on('value',s=>cb(!!s.val()));},
+    offset(){return off;}
+  };
+}
+/*DB-END*/
+const B={on:false, db:null, room:null, id:null, subs:[], st:null, results:{}, ts:null, plan:null, shownKey:'', timerInt:null};
+function battleOff(){ B.subs.forEach(u=>u()); B.subs=[]; if(B.planSub){B.planSub();B.planSub=null;} B.plan=null; B.on=false; clearInterval(B.timerInt); document.body.classList.remove('battle'); $('stRoom').classList.add('hidden'); }
+if(!BATTLE_OK){
+  $('btnJoin').disabled=true; $('inRoom').disabled=true; $('inTeam').disabled=true;
+  $('joinMsg').textContent='対戦モードは、先生がサーバーの設定（config.js）をすると使えるようになります。';
+}
+$('inRoom').addEventListener('input',e=>{e.target.value=e.target.value.replace(/[^0-9]/g,'').slice(0,4);});
+$('btnJoin').addEventListener('click',async()=>{
+  const code=$('inRoom').value.trim(), team=$('inTeam').value.trim(), msg=$('joinMsg');
+  msg.className='join-msg';
+  if(!/^\d{4}$/.test(code)){msg.textContent='ルーム番号は4けたの数字で入力してね。';return;}
+  if(!team){msg.textContent='班の名前を入力してね。';return;}
+  $('btnJoin').disabled=true; msg.textContent='接続中…';
+  try{
+    if(!B.db) B.db=await makeDB();
+    const st=await B.db.get(`rooms/${code}/state`);
+    if(!st){msg.textContent='そのルーム番号は見つかりません。先生の画面の番号を確かめてね。';$('btnJoin').disabled=false;return;}
+    let saved=null; try{saved=JSON.parse(localStorage.getItem('iceBattle:'+code));}catch(e){}
+    let id=(saved&&saved.name===team)?saved.id:null;
+    if(!id){
+      const teams=await B.db.get(`rooms/${code}/teams`)||{};
+      const same=Object.entries(teams).find(([k,v])=>v&&v.name===team);
+      if(same) id=same[0]; else id='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    }
+    try{localStorage.setItem('iceBattle:'+code,JSON.stringify({id,name:team}));}catch(e){}
+    await B.db.update(`rooms/${code}/teams/${id}`,{name:team,joinedAt:Date.now()});
+    msg.className='join-msg ok'; msg.textContent='参加しました！';
+    startBattle(code,id,team);
+  }catch(e){
+    console.error(e); msg.textContent='サーバーにつながりませんでした。ネットワークを確かめて、もう一度押してね。';
+  }finally{ $('btnJoin').disabled=false; }
+});
+function startBattle(code,id,team){
+  battleOff(); reset(); S.name=team;
+  B.on=true; B.room=code; B.id=id; B.st=null; B.results={}; B.ts=null; B.plan=undefined; B.shownKey='';
+  document.body.classList.add('battle');
+  $('stRoom').textContent='ルーム '+code; $('stRoom').classList.remove('hidden');
+  $('lbRoom').textContent=code; $('lbTeam').textContent=team;
+  B.db.onConn(c=>{$('lbConn').textContent=c?'🟢 サーバーに接続中':'🔴 接続が切れています（自動で再接続します）';});
+  const R=`rooms/${code}`;
+  B.subs.push(B.db.on(`${R}/state`,v=>{B.st=v;applyBattle();}));
+  B.subs.push(B.db.on(`${R}/results/${id}`,v=>{B.results=v||{};applyBattle();}));
+  B.subs.push(B.db.on(`${R}/teamState/${id}`,v=>{B.ts=v;applyBattle();}));
+  B.timerInt=setInterval(tickTimer,500);
+  openTut(true);
+}
+function histFromResults(){
+  return Object.keys(B.results).filter(k=>/^d\d$/.test(k)&&B.results[k]).sort().map(k=>B.results[k]);
+}
+function syncMoney(){
+  S.cash=B.ts&&typeof B.ts.cash==='number'?B.ts.cash:START_CASH;
+  S.rep=B.ts&&typeof B.ts.rep==='number'?B.ts.rep:1.0;
+  S.hist=histFromResults();
+}
+function applyBattle(){
+  if(!B.on||!B.st) return;
+  if(!$('tut').classList.contains('hidden')&&tutFirst) return; // 説明中はあとで反映
+  const st=B.st; syncMoney();
+  if(st.phase==='lobby'){ if(B.shownKey!=='lobby'){B.shownKey='lobby'; renderStatus(); show('scLobby');} return; }
+  if(st.phase==='decide'){
+    const key='decide'+st.day;
+    if(B.planSub&&B.planDay!==st.day){B.planSub();B.planSub=null;B.plan=null;}
+    if(!B.planSub){B.planDay=st.day;B.plan=null;B.planSub=B.db.on(`rooms/${B.room}/plans/d${st.day}/${B.id}`,v=>{B.plan=v;renderSubmitted();});}
+    if(B.shownKey!==key){B.shownKey=key; S.day=st.day; renderDecide(); $('btnOpen').textContent='この作戦で決定する';}
+    renderSubmitted(); return;
+  }
+  if(st.phase==='result'||st.phase==='final'){
+    const r=B.results['d'+st.day];
+    if(st.phase==='final'){
+      if(B.shownKey==='final') showRank('fRank');
+      if(B.shownKey!=='final' && S.hist.length){B.shownKey='final'; S.day=DAYS.length; renderFinal(); showRank('fRank');}
+      return;
+    }
+    const key='result'+st.day;
+    if(r && B.shownKey===key){ showRank('rRank'); renderStatus(); }
+    if(r && B.shownKey!==key){B.shownKey=key; S.day=st.day; renderResult(r); showRank('rRank');
+      document.querySelectorAll('[data-wait]').forEach(w=>{w.classList.remove('hidden');w.textContent=st.day>=DAYS.length-1?'⏳ 先生が最終結果を発表するまで待ってね':'⏳ 先生が次の日に進めるまで待ってね';});}
+  }
+}
+function showRank(elId){
+  const el=$(elId);
+  if(B.on&&B.ts&&B.ts.rank){el.textContent=`🏆 現在 ${B.ts.rank}位 ／ ${B.ts.of}チーム中`;el.classList.remove('hidden');}
+  else el.classList.add('hidden');
+}
+function renderSubmitted(){
+  const locked=!!(B.on&&B.plan);
+  $('scDecide').classList.toggle('locked',locked);
+  $('dSubmitted').classList.toggle('hidden',!locked);
+  if(locked){const p=B.plan;$('dSubText').textContent=p.rest?'今日はお店を休む':`${LOCS[p.loc].name}・${p.price}円・仕入れ${p.stock}個・アルバイト${p.staff}人・宣伝${ADS[p.ad].label}`;}
+}
+function tickTimer(){
+  const el=$('dTimer'); if(!B.on||!B.st||B.st.phase!=='decide'||!B.st.deadline){el.classList.add('hidden');return;}
+  const left=Math.max(0,Math.round((B.st.deadline-(Date.now()+B.db.offset()))/1000));
+  el.classList.remove('hidden'); el.classList.toggle('low',left<=15);
+  el.textContent=left>0?`⏱ のこり ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`:'⏱ 時間です！';
+}
+function submitPlan(rest){
+  if(!B.on||!B.st||B.st.phase!=='decide') return;
+  const d=S.d; if(!rest && costOf(d).total>S.cash) return;
+  B.db.set(`rooms/${B.room}/plans/d${B.st.day}/${B.id}`,{loc:d.loc,price:d.price,stock:d.stock,staff:d.staff,ad:d.ad,rest:!!rest,at:Date.now()});
+}
+$('btnUnsubmit').addEventListener('click',()=>{ if(B.on&&B.st&&B.st.phase==='decide') B.db.set(`rooms/${B.room}/plans/d${B.st.day}/${B.id}`,null); });
+$('lbRules').addEventListener('click',()=>openTut(false));
+
+/* ---------- A4 PDF ---------- */
+const dlPromise=(window.claude&&typeof window.claude.use==='function')
+  ? window.claude.use('downloads').catch(()=>null) : Promise.resolve(null);
+function buildReport(){
+  const h=S.hist, p=S.cash-START_CASH, fb=analyze();
+  const sum=k=>h.reduce((a,x)=>a+k(x),0);
+  const totRev=sum(x=>x.revenue), totCost=sum(x=>x.cost.total);
+  const mx=Math.max(1000,...h.map(x=>Math.abs(x.profit))), sc=42/mx;
+  const sgn=v=>(v>=0?'+':'−')+Math.abs(v).toLocaleString('ja-JP');
+  const cols=h.map(x=>{
+    const v=x.profit, bh=Math.max(2,Math.abs(v)*sc);
+    if(x.closed) return `<div class="rp-col"><div class="rp-up"><span style="color:#56627A">☂️ 休業</span></div><div class="rp-dn"></div><div class="rp-lbl">${x.day}日目 ${WEATHER[x.weather].ic}${x.t}℃</div></div>`;
+    return `<div class="rp-col">
+      <div class="rp-up">${v>=0?`<span>${sgn(v)}</span><i style="height:${bh}px;background:#2E9C7A"></i>`:''}</div>
+      <div class="rp-dn">${v<0?`<i style="height:${bh}px;background:#D93A55"></i><span style="color:#C3243F">${sgn(v)}</span>`:''}</div>
+      <div class="rp-lbl">${x.day}日目 ${WEATHER[x.weather].ic}${x.t}℃</div></div>`;}).join('');
+  const rows=h.map(x=>x.closed?`<tr><td>${x.day}日目</td><td>${x.weather} ${x.t}℃</td><td colspan="11" style="text-align:center;color:#56627A">休業（営業していたら 利益 約${x.ifProfit>=0?'+':'−'}${Math.abs(x.ifProfit).toLocaleString('ja-JP')}円）</td><td>±0円</td></tr>`:`<tr><td>${x.day}日目</td><td>${x.weather} ${x.t}℃</td><td>${LOCS[x.loc].name}</td><td>${x.price}円</td><td>${x.stock}</td><td>${x.staff}人</td><td>${ADS[x.ad].label}</td><td>${x.demand}</td><td>${x.sold}</td><td>${x.lost}</td><td>${x.waste}</td><td>${yen(x.revenue)}</td><td>${yen(x.cost.total)}</td><td style="color:${x.profit>=0?'#1D8A67':'#C3243F'};font-weight:700">${x.profit>=0?'+':''}${yen(x.profit)}</td></tr>`).join('');
+  const total=`<tr class="rp-total"><td>合計</td><td></td><td></td><td></td><td>${sum(x=>x.stock)}</td><td></td><td></td><td>${sum(x=>x.demand)}</td><td>${sum(x=>x.sold)}</td><td>${sum(x=>x.lost)}</td><td>${sum(x=>x.waste)}</td><td>${yen(totRev)}</td><td>${yen(totCost)}</td><td>${p>=0?'+':''}${yen(p)}</td></tr>`;
+  const qs=[...document.querySelectorAll('.qs li')].map((li,i)=>{
+    const q=li.childNodes[0].textContent.trim(), a=li.querySelector('textarea').value.trim();
+    return `<div class="rp-item"><div class="rp-q">${i+1}. ${escapeHtml(q)}</div><div class="rp-ans">${escapeHtml(a)}</div></div>`;}).join('');
+  $('a4Report').innerHTML=`
+    <div class="rp-head">
+      <div><div class="rp-kicker">起業家精神教育　アイス屋さん経営ゲーム　結果シート</div>
+      <div class="rp-shop">${escapeHtml(S.name)}</div></div>
+      <div class="rp-id">実施日　　　年　　月　　日<br>　　年　　組　　番　氏名＿＿＿＿＿＿＿＿＿＿</div>
+    </div>
+    <div class="rp-sum">
+      <div class="rp-box main"><small>5日間で増えたお金<span class="rp-title">${title(p)}</span></small><b>${p>=0?'+':''}${yen(p)}</b></div>
+      <div class="rp-box"><small>売上の合計</small><b>${yen(totRev)}</b></div>
+      <div class="rp-box"><small>かかったお金の合計</small><b>${yen(totCost)}</b></div>
+      <div class="rp-box"><small>最終所持金（元手5万円）</small><b>${yen(S.cash)}</b></div>
+    </div>
+    <div><h3>毎日の利益</h3><div class="rp-chart${h.some(x=>x.profit<0)?'':' no-neg'}">${cols}</div></div>
+    <div><h3>5日間の記録</h3><table class="rp-t">
+      <tr><th>日</th><th>天気・気温</th><th>場所</th><th>価格</th><th>仕入れ</th><th>バイト</th><th>宣伝</th><th>客数</th><th>販売</th><th>売り逃し</th><th>売れ残り</th><th>売上</th><th>費用</th><th>利益</th></tr>
+      ${rows}${total}</table></div>
+    <div><h3>自動フィードバック</h3>
+      <div class="rp-type">${fb.type}<span>${fb.desc}</span></div>
+      <div class="rp-fb"><div class="g"><b>👍 よかったところ</b><ul>${fb.good.map(t=>`<li>${t}</li>`).join('')}</ul></div>
+      <div class="n"><b>🎯 次に挑戦したいこと</b><ul>${fb.next.map(t=>`<li>${t}</li>`).join('')}</ul></div></div></div>
+    <div class="rp-qs"><h3>ふりかえり</h3><div class="rp-list">${qs}</div></div>`;
+}
+function fileSafe(n){return n.replace(/[\\/:*?"<>|]/g,'_').slice(0,40);}
+async function savePdf(){
+  const btn=$('btnPrint'), msg=$('pdfMsg'), label=btn.textContent;
+  buildReport();
+  btn.disabled=true; btn.textContent='PDFを作成中…'; msg.textContent='';
+  try{
+    if(!window.html2canvas||!window.jspdf){
+      msg.textContent='印刷画面で「PDFに保存」を選ぶと、A4で1枚のPDFになります。';
+      window.print(); return;
+    }
+    const dl=await dlPromise;
+    if(document.fonts&&document.fonts.ready) await document.fonts.ready;
+    const canvas=await html2canvas($('a4Report'),{scale:2,backgroundColor:'#ffffff',logging:false});
+    const pdf=new window.jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+    pdf.addImage(canvas.toDataURL('image/jpeg',0.92),'JPEG',0,0,210,297);
+    const fname=`${fileSafe(S.name)}_アイス屋さん経営結果.pdf`;
+    if(dl) await dl.save({filename:fname, data:pdf.output('blob')});
+    else pdf.save(fname); // Claude以外のサイトに置いたときは普通にダウンロード
+    msg.textContent='PDFを保存しました。';
+  }catch(e){
+    const c=e&&e.code;
+    if(c==='declined') msg.textContent='保存をキャンセルしました。';
+    else if(c==='rate_limited') msg.textContent='保存の確認画面がすでに開いています。少し待ってからもう一度押してください。';
+    else{ msg.textContent='印刷画面で「PDFに保存」を選ぶと、A4で1枚のPDFになります。'; window.print(); }
+  }finally{ btn.disabled=false; btn.textContent=label; }
+}
+$('btnPrint').addEventListener('click',savePdf);
+$('btnRetry').addEventListener('click',()=>{
+  const name=S.name; reset(); S.name=name; $('inName').value=name;
+  document.querySelectorAll('.qs textarea').forEach(t=>t.value='');
+  renderDecide();
+});
+})();
+</script>
+</body>
+</html>
