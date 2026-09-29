@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -244,6 +244,20 @@ body.tut-open{overflow:hidden}
 .rest-box{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--bg);border-radius:14px;padding:12px 14px!important;margin-top:10px;border-bottom:none!important}
 .rest-box p{margin:0;font-size:14px;flex:1;min-width:220px}
 .btn-rest{min-width:230px;background:var(--panel);color:var(--ink);border:2px solid var(--sub);padding:12px 16px;font-size:16px}
+.rest-btns{display:flex;flex-direction:column;gap:8px;min-width:250px}
+.rest-card{max-width:620px}
+.rest-choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rest-choice{display:flex;flex-direction:column;align-items:center;gap:4px;border:3px solid var(--line);background:var(--panel);color:var(--ink);border-radius:18px;padding:16px 10px;font-size:16px;text-align:center}
+.rest-choice.promo{border-color:var(--mint);background:var(--mint-soft)}
+.rest-choice:disabled{opacity:.45}
+.rc-ic{font-size:40px;line-height:1}
+.rest-choice b{font-family:"Zen Maru Gothic",sans-serif;font-size:19px}
+.rc-cost{font-weight:700;font-size:22px;font-variant-numeric:tabular-nums}
+.rest-choice small{color:var(--sub);font-size:13px;line-height:1.5}
+.rest-warn{min-height:1.2em;margin:10px 0 4px!important;font-size:14px}
+@media(max-width:520px){.rest-choices{grid-template-columns:1fr}}
+.btn-rest.promo{border-color:var(--mint);color:var(--mint)}
+.boost-banner{margin-top:8px;background:var(--mint-soft);border-left:6px solid var(--mint);padding:8px 14px;border-radius:8px;font-weight:700}
 .btn-rest.armed{border-color:var(--berry);color:var(--berry);background:var(--berry-soft)}
 .stamp.rest{color:#6B7280}
 .rest-title{text-align:center;font-size:22px;margin:10px 0}
@@ -321,6 +335,7 @@ body.tut-open{overflow:hidden}
 .join-grid .name{margin-top:12px}
 #inRoom{font-size:22px;letter-spacing:.2em;font-variant-numeric:tabular-nums}
 .battle .btn-main{background:var(--mint)}
+.battle .btn-main:disabled{background:var(--line);color:var(--sub)}
 .join-msg{min-height:1.5em;margin:10px 0 0;font-weight:700;color:var(--berry)}
 .join-msg.ok{color:var(--mint)}
 /* lobby */
@@ -525,12 +540,141 @@ body{background:var(--bg)}
 .pod.p1{background:#FFF1BF;min-height:220px}.pod.p2{background:#E6EBF0;min-height:170px}.pod.p3{background:#F6DFC8;min-height:140px}
 .csv-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px}
 .class-note{color:var(--sub);margin:6px 0 0}
+
+/* ===== projector-first overrides ===== */
+:root{--ink:#111827;--sub:#374151;--line:#B8C4CC;--bg:#EEF3F1;--panel:#FFFFFF}
+body{background:var(--bg);color:var(--ink);font-size:20px}
+.hbar{padding:10px 24px;min-height:64px}
+.hbar-l b{font-size:24px}
+.hbar-sub{font-size:16px;color:#D6DEE8}
+.room-big{font-size:26px;padding:4px 18px}
+.hbar .days span{width:40px;height:40px;font-size:18px}
+.fs-btn{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.6);border-radius:999px;padding:6px 14px;font-weight:700;font-size:16px}
+.hwrap{max-width:none;padding:10px 28px 24px}
+.phase-head{margin-top:8px}
+.phase-tag{font-size:24px}
+.phase-head h2{font-size:42px}
+.btn.big{font-size:24px;padding:18px 36px}
+.timer-ctl{border-width:3px}
+.tlabel{font-size:17px;color:var(--sub)}
+.chip{font-size:20px;padding:8px 16px;border-width:3px;border-color:var(--line)}
+.hgrid{grid-template-columns:minmax(0,1fr) 340px;gap:20px;margin-top:12px}
+body[data-phase="result"] .hgrid,body[data-phase="final"] .hgrid{grid-template-columns:1fr}
+body[data-phase="result"] .side,body[data-phase="final"] .side{display:none}
+.panel,.bigcard{border:3px solid var(--line)}
+.bigcard{padding:22px 28px}
+.side h3{font-size:22px}
+.teams{gap:8px;max-height:none}
+.teams li{font-size:24px;padding:10px 14px;background:#F4F7F6;border:2px solid var(--line)}
+.teams li .st{font-size:18px;padding:4px 12px}
+.st.ok{background:#1D7F63;color:#fff}.st.wait{background:#E5E7EB;color:#1F2937}.st.rest{background:#4B5563;color:#fff}
+/* lobby */
+.lobby-grid{display:grid;grid-template-columns:auto 1fr;gap:36px;align-items:center}
+.qr-box{text-align:center}
+.qr{width:260px;height:260px;background:#fff;padding:6px;border:3px solid var(--ink);border-radius:12px}
+.qr svg{width:100%;height:100%;display:block}
+.qr-box p{margin:6px 0 0;font-weight:700;font-size:18px}
+.lbl{margin:0;font-weight:700;color:var(--sub);font-size:20px}
+.code-huge{font-size:150px;text-align:left;margin:0 0 10px;color:var(--ink)}
+.url{font-size:24px;text-align:left;font-weight:700;background:#F4F7F6;border:2px solid var(--line)}
+.join-steps{margin-top:22px}
+.join-steps div{font-size:22px;font-weight:700;background:#F4F7F6;border:2px solid var(--line)}
+.join-steps em{width:36px;height:36px}
+/* decide */
+.fc-ic{font-size:140px}
+.fc-big .w{font-size:72px}
+.fc-big .t{font-size:44px}
+.fc-big .plan-s{font-size:22px!important;color:var(--sub)}
+.news-big{font-size:26px}
+.clock{font-size:110px;margin-top:6px}
+.progress{height:22px;border-radius:11px;border:2px solid var(--line);background:#fff}
+.progress i{background:#1D7F63}
+.sub-count{font-size:28px}
+/* result */
+.wx-cmp{font-size:26px}
+.wx-cmp .box{border:2px solid var(--line);background:#F4F7F6}
+.wx-cmp .box b{font-size:36px}
+.wx-cmp .neg{font-size:26px}
+.rank-table{font-size:26px;margin-top:10px}
+.rank-table th{font-size:18px;color:var(--sub)}
+.rank-table td,.rank-table th{padding:8px 12px;border-bottom:2px solid #D8E0E4}
+.rank-table td b{font-size:28px}
+.rank-no{width:48px;height:48px;font-size:24px;background:#E5E7EB}
+.plan-s{font-size:18px;color:var(--sub)}
+.bar{height:20px;border-radius:10px;background:#1D7F63}
+.pos{color:#15795C}.neg{color:#C0263F}
+/* final */
+.pod b{font-size:34px}.pod span{font-size:26px}.pod .medal{font-size:60px}
+.pod .plan-s{font-size:20px}
+.corr-card h4{font-size:22px}
+.corr-r .badge{font-size:18px}
+.class-note{font-size:20px;color:var(--sub)}
+.hmsg{font-size:20px}
+
+/* layout v2: teams below, no sidebar */
+.hgrid{grid-template-columns:1fr!important}
+.side{position:static;margin-top:0;padding:14px 20px}
+.side h3{font-size:20px;margin-bottom:4px}
+.teams{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:6px}
+.teams li{font-size:22px;padding:8px 12px;min-height:52px}
+.teams li .st{font-size:16px;padding:3px 10px;white-space:nowrap}
+.phase-head{align-items:center}
+.phase-head h2{font-size:38px}
+.phase-tag{font-size:22px}
+.wx-inline{font-weight:900;color:var(--ink)}
+.miss{margin-left:10px;background:#C0263F;color:#fff;border-radius:999px;padding:2px 12px;font-size:18px}
+/* lobby compact */
+.qr{width:220px;height:220px}
+.code-huge{font-size:130px}
+.join-steps{margin-top:16px}
+.join-steps div{padding:10px 14px}
+/* decide card */
+.dec-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;align-items:center}
+.fc-big{gap:18px}
+.fc-ic{font-size:120px}
+.fc-lbl{font-size:22px;color:var(--sub);font-weight:700}
+.fc-big .w{font-size:64px}
+.fc-big .t{font-size:40px}
+.clock-box{display:flex;flex-direction:column;align-items:center;gap:10px}
+.clock{font-size:96px;margin:0;line-height:1}
+.tchips{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center}
+.news-big{margin-top:12px;font-size:24px;padding:10px 16px}
+.news-big.rain{background:#EEF2F7;border-left-color:#4A86C8}
+.prog-row{display:flex;align-items:center;gap:18px;margin-top:14px}
+.prog-row .progress{flex:1;margin:0}
+.prog-row .sub-count{margin:0;white-space:nowrap}
+/* result table compact */
+.rank-table{font-size:24px;margin-top:0}
+.rank-table td{padding:6px 10px}
+.rank-table td b{font-size:26px}
+.rank-no{width:42px;height:42px;font-size:22px}
+.plan-cell{font-size:17px;color:var(--sub);max-width:360px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-cell{width:18%}
+/* v3 fit tweaks */
+.qr{width:190px;height:190px}
+.code-huge{font-size:116px;margin-bottom:4px}
+.url{font-size:22px;padding:6px 12px}
+.lobby-grid{gap:28px}
+.join-steps{margin-top:12px;gap:10px}
+.join-steps div{font-size:19px;padding:8px 12px}
+.join-steps em{width:30px;height:30px}
+.bigcard{padding:16px 24px}
+.rank-table{font-size:22px}
+.rank-table th{font-size:16px;padding:4px 10px}
+.rank-table td{padding:4px 10px}
+.rank-table td b{font-size:24px}
+.rank-no{width:36px;height:36px;font-size:20px}
+.plan-cell{font-size:16px}
+.bar{height:16px}
+.hwrap{padding:8px 28px 20px}
+.hmsg{min-height:0;margin:8px 0 0}
+.hmsg:empty{display:none}
 </style>
 </head>
 <body>
 <header class="hbar">
   <div class="hbar-l"><b>🍦 アイス屋さん経営ゲーム</b><span class="hbar-sub">先生用コントロール画面</span></div>
-  <div class="hbar-r"><span class="room-big hidden" id="hRoomChip"></span><div class="days" id="hDays"></div></div>
+  <div class="hbar-r"><span class="room-big hidden" id="hRoomChip"></span><div class="days" id="hDays"></div><button class="fs-btn" id="hFull" title="全画面表示">⛶ 全画面</button></div>
 </header>
 <main class="wrap hwrap">
 
@@ -556,10 +700,6 @@ body{background:var(--bg)}
   <div class="phase-head">
     <div><p class="phase-tag" id="hPhaseTag"></p><h2 id="hPhaseTitle"></h2></div>
     <div class="phase-actions">
-      <div class="timer-ctl hidden" id="hTimerCtl">
-        <span class="tlabel">制限時間</span>
-        <button class="chip" data-timer="60">1分</button><button class="chip" data-timer="120">2分</button><button class="chip" data-timer="180">3分</button><button class="chip" data-timer="0">止める</button>
-      </div>
       <button class="btn btn-main big" id="hPrimary"></button>
     </div>
   </div>
@@ -584,6 +724,7 @@ body{background:var(--bg)}
 
 <script>window.FIREBASE_CONFIG=window.FIREBASE_CONFIG||null;</script>
 <script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 (function(){
 const START_CASH=50000, RENT=3000, WAGE=6000, STAFF_CAP=50, OWNER_CAP=30, BASE=100, BASE_PRICE=250;
@@ -603,6 +744,7 @@ const LOCS=[
   {name:'商店街', ic:'🏪', rent:3000, m:1.0, el:200, rain:1.0, desc:'人通りはふつう。天気の影響もふつう。'},
   {name:'家の前', ic:'🏠', rent:0, m:0.5, el:160, rain:1.4, desc:'場所代は0円。お客さんは少なく値段にきびしいが、近所の常連さんは雨でも来てくれる。'}
 ];
+const PROMO_COST=3000, PROMO_BOOST=1.3;
 const ADS=[
   {cost:0, m:1.0, label:'なし', sub:'0円'},
   {cost:2000, m:1.25, label:'チラシ', sub:'2,000円'},
@@ -620,11 +762,12 @@ function costOf(d){
   return {mat,staff,ad,rent,total:mat+staff+rent+ad};
 }
 /*CORE-RUN-START*/
-function runDay(d,di,rep){
+function runDay(d,di,rep,boost){
+  boost=boost||1;
   const day=DAYS[di], w=WEATHER[day.act], L=LOCS[d.loc];
   const priceF=Math.exp(-(d.price-BASE_PRICE)/L.el);
   const locF=L.m*(day.act==='雨'?L.rain:1);
-  const demand=Math.max(0,Math.round(BASE*priceF*tempF(day.t)*w.m*day.ev*ADS[d.ad].m*rep*locF));
+  const demand=Math.max(0,Math.round(BASE*priceF*tempF(day.t)*w.m*day.ev*ADS[d.ad].m*rep*locF*boost));
   const cap=OWNER_CAP+d.staff*STAFF_CAP;
   const sold=Math.min(demand,d.stock,cap);
   const c=costOf(d), revenue=sold*d.price, profit=revenue-c.total;
@@ -634,16 +777,16 @@ function runDay(d,di,rep){
   if(demand>0 && lost/demand>0.2) nrep=Math.max(0.7,+(rep-0.1).toFixed(2));
   else if(lost===0 && demand>0) nrep=Math.min(1.2,+(rep+0.05).toFixed(2));
   const r={day:di+1, weather:day.act, fc:day.fc, t:day.t, fcT:day.fcT, loc:d.loc, price:d.price, stock:d.stock, staff:d.staff, ad:d.ad,
-    demand, sold, lost, waste, revenue, cost:c, profit, lostByStock, lostByCap, repBefore:rep, repAfter:nrep, cap};
-  return {r, delta:profit, rep:nrep};
+    demand, sold, lost, waste, revenue, cost:c, profit, lostByStock, lostByCap, repBefore:rep, repAfter:nrep, cap, boosted:boost>1};
+  return {r, delta:profit, rep:nrep, boost:1};
 }
-function restRecord(d,di,rep,extra){
-  const day=DAYS[di], est=runDay(d,di,rep).r;
+function restRecord(d,di,rep,extra,boost){
+  const day=DAYS[di], est=runDay(d,di,rep,boost).r, promo=!!(extra&&extra.promo), pc=promo?PROMO_COST:0;
   const r=Object.assign({day:di+1, weather:day.act, fc:day.fc, t:day.t, fcT:day.fcT, closed:true, loc:d.loc,
     price:0, stock:0, staff:0, ad:0, demand:0, sold:0, lost:0, waste:0, revenue:0,
-    cost:{mat:0,staff:0,ad:0,rent:0,total:0}, profit:0, repBefore:rep, repAfter:rep,
+    cost:{mat:0,staff:0,ad:pc,rent:0,total:pc}, profit:-pc, repBefore:rep, repAfter:rep,
     ifPlan:{loc:d.loc,price:d.price,stock:d.stock,staff:d.staff,ad:d.ad}, ifDemand:est.demand, ifProfit:est.profit}, extra||{});
-  return {r, delta:0, rep};
+  return {r, delta:-pc, rep, boost:promo?PROMO_BOOST:1};
 }
 /*CORE-RUN-END*/
 function corr(a,b){
@@ -777,8 +920,9 @@ function ranking(){
 }
 function planText(r){
   if(!r) return '—';
-  if(r.closed) return r.noPlan==='time'?'☂️ 休業（未提出）':r.noPlan==='cash'?'☂️ 休業（資金不足）':r.noPlan==='late'?'☂️ 休業（途中参加）':'☂️ 休業';
-  return `${LOCS[r.loc].ic}${LOCS[r.loc].name}・${r.price}円・仕入${r.stock}・バイト${r.staff}・${ADS[r.ad].label}`;
+  if(r.closed) return r.noPlan==='time'?'☂️ 休業（未提出）':r.noPlan==='cash'?'☂️ 休業（資金不足）':r.noPlan==='late'?'☂️ 休業（途中参加）':r.promo?'📣 休業＋SNS告知':'☂️ 休業';
+  const bst=r.boosted?'（告知効果あり）':'';
+  return `${LOCS[r.loc].ic}${LOCS[r.loc].name}・${r.price}円・仕入${r.stock}・バイト${r.staff}・${ADS[r.ad].label}${bst}`;
 }
 
 /* ---------- render ---------- */
@@ -786,40 +930,43 @@ function render(){
   const st=(H.data&&H.data.state)||{phase:'lobby',day:0};
   $('hDays').innerHTML=DAYS.map((_,i)=>{const done=(st.phase==='result'||st.phase==='final')?i<=st.day:i<st.day;return `<span class="${done?'done':(i===st.day&&st.phase!=='lobby'&&st.phase!=='final')?'now':''}">${i+1}</span>`;}).join('');
   renderTeams(st);
-  $('hTimerCtl').classList.toggle('hidden',st.phase!=='decide');
+  document.body.dataset.phase=st.phase;
   const P=$('hPrimary'); P.disabled=false; msg('');
   if(st.phase==='lobby'){
     $('hPhaseTag').textContent='準備中'; $('hPhaseTitle').textContent='生徒の参加を待っています';
     const url=studentURL();
-    $('hMain').innerHTML=`<div class="bigcard"><p style="margin:0;font-weight:700;color:var(--sub)">ルーム番号</p>
-      <div class="code-huge">${H.room}</div>
-      <div class="url">${escapeHtml(url)}</div>
-      <div class="join-steps"><div><em>1</em>上のURLをiPadで開く</div><div><em>2</em>「クラス対戦」の欄に、ルーム番号と班の名前を入れる</div><div><em>3</em>ルール説明とクイズを終えて待つ</div></div></div>`;
+    $('hMain').innerHTML=`<div class="bigcard lobby-card"><div class="lobby-grid">
+      <div class="qr-box"><div id="hQR" class="qr"></div><p>iPadのカメラで読みとる</p></div>
+      <div><p class="lbl">ルーム番号</p><div class="code-huge">${H.room}</div>
+      <p class="lbl">URL</p><div class="url">${escapeHtml(url)}</div></div></div>
+      <div class="join-steps"><div><em>1</em>QRコードかURLでゲームを開く</div><div><em>2</em>「クラス対戦」にルーム番号と班の名前を入れる</div><div><em>3</em>待機画面になったら参加完了</div></div></div>`;
+    drawQR(url);
     P.textContent='1日目をスタート'; P.disabled=!teamIds().length; P.onclick=startDay;
     if(!teamIds().length) msg('1班以上が参加するとスタートできます。');
   }else if(st.phase==='decide'){
     const d=DAYS[st.day];
     $('hPhaseTag').textContent=`${st.day+1}日目｜作戦タイム`; $('hPhaseTitle').textContent='天気予報を見て、作戦を決めよう';
     const ids=teamIds(), n=ids.filter(id=>planOf(st.day,id)).length;
-    $('hMain').innerHTML=`<div class="bigcard"><div class="fc-big"><div class="fc-ic">${WEATHER[d.fc].ic}</div>
-      <div><div class="plan-s" style="font-size:18px">${st.day+1}日目の天気予報</div><div class="w">${d.fc}</div><div class="t">最高気温 ${d.fcT}℃</div></div></div>
+    $('hMain').innerHTML=`<div class="bigcard dec-card"><div class="dec-grid">
+      <div class="fc-big"><div class="fc-ic">${WEATHER[d.fc].ic}</div>
+      <div><div class="fc-lbl">${st.day+1}日目の天気予報</div><div class="w">${d.fc}</div><div class="t">最高気温 ${d.fcT}℃</div></div></div>
+      <div class="clock-box"><div class="clock" id="hClock">⏱ --:--</div>
+      <div class="tchips"><span class="tlabel">制限時間</span><button class="chip" data-timer="60">1分</button><button class="chip" data-timer="120">2分</button><button class="chip" data-timer="180">3分</button><button class="chip" data-timer="0">止める</button></div></div></div>
       ${d.news?`<div class="news-big">${escapeHtml(d.news)}</div>`:''}
-      ${d.fc==='雨'?'<div class="news-big" style="background:var(--bg);border-color:var(--sub)">☔ 雨の予報の日は「お店を休む」も選べます</div>':''}
-      <div class="clock" id="hClock"></div>
-      <div class="progress"><i style="width:${ids.length?n/ids.length*100:0}%"></i></div>
-      <div class="sub-count">作戦を提出した班：${n} / ${ids.length}</div></div>`;
+      ${d.fc==='雨'?'<div class="news-big rain">☔ 雨の予報の日は「お店を休む」も選べます（休むときにSNSで告知もできる）</div>':''}
+      <div class="prog-row"><div class="progress"><i style="width:${ids.length?n/ids.length*100:0}%"></i></div><div class="sub-count">提出 ${n} / ${ids.length} 班</div></div></div>`;
     P.textContent='締め切って営業開始'; P.onclick=()=>openShop(n,ids.length);
     tickClock();
   }else if(st.phase==='result'){
     const d=DAYS[st.day], last=st.day>=DAYS.length-1;
-    $('hPhaseTag').textContent=`${st.day+1}日目｜結果発表`; $('hPhaseTitle').textContent='今日の結果と現在のランキング';
+    const miss=d.fc!==d.act||Math.abs(d.t-d.fcT)>=2;
+    $('hPhaseTag').innerHTML=`${st.day+1}日目｜結果発表　<span class="wx-inline">実際 ${WEATHER[d.act].ic} ${d.act}・${d.t}℃</span>（予報 ${d.fc}・${d.fcT}℃）${miss?'<span class="miss">予報が外れました！</span>':''}`;
+    $('hPhaseTitle').textContent='今日の結果とランキング';
     const rk=ranking(), mx=Math.max(1,...rk.map(t=>t.cash));
     const rows=rk.map(t=>{const r=resOf(st.day,t.id), pr=r?r.profit:0;
-      return `<tr class="r${t.rank}"><td><span class="rank-no">${t.rank}</span></td><td class="l"><b>${tname(t.id)}</b><div class="plan-s">${planText(r)}</div></td>
-      <td>${r&&!r.closed?r.demand+'人':'—'}</td><td class="${pr>0?'pos':pr<0?'neg':''}">${pr>0?'+':''}${yen(pr)}</td><td><b>${yen(t.cash)}</b></td><td style="width:22%"><div class="bar" style="width:${Math.max(0,t.cash)/mx*100}%"></div></td></tr>`;}).join('');
-    $('hMain').innerHTML=`<div class="bigcard"><div class="wx-cmp"><div class="box">予報 ${WEATHER[d.fc].ic} ${d.fc}・${d.fcT}℃</div><div>→</div><div class="box">実際 <b>${WEATHER[d.act].ic} ${d.act}・${d.t}℃</b></div>
-      ${d.fc!==d.act||Math.abs(d.t-d.fcT)>=2?'<div class="neg">予報が外れました！</div>':''}</div>
-      <div class="scroll"><table class="rank-table"><tr><th>順位</th><th class="l">班と今日の作戦</th><th>来客数</th><th>今日の利益</th><th>所持金</th><th></th></tr>${rows}</table></div></div>`;
+      return `<tr class="r${t.rank}"><td><span class="rank-no">${t.rank}</span></td><td class="l"><b>${tname(t.id)}</b></td><td class="l plan-cell">${planText(r)}</td>
+      <td>${r&&!r.closed?r.demand+'人':'—'}</td><td class="${pr>0?'pos':pr<0?'neg':''}">${pr>0?'+':''}${yen(pr)}</td><td><b>${yen(t.cash)}</b></td><td class="bar-cell"><div class="bar" style="width:${Math.max(0,t.cash)/mx*100}%"></div></td></tr>`;}).join('');
+    $('hMain').innerHTML=`<div class="bigcard"><div class="scroll"><table class="rank-table"><tr><th>順位</th><th class="l">班</th><th class="l">今日の作戦</th><th>来客数</th><th>今日の利益</th><th>所持金</th><th></th></tr>${rows}</table></div></div>`;
     P.textContent=last?'🏆 最終結果を発表':`${st.day+2}日目へ進む`; P.onclick=last?finish:nextDay;
   }else if(st.phase==='final'){
     $('hPhaseTag').textContent='最終結果'; $('hPhaseTitle').textContent='5日間の最終ランキング';
@@ -831,7 +978,7 @@ function renderTeams(st){
   const ids=teamIds(); $('hCount').textContent=`（${ids.length}班）`;
   $('hTeams').innerHTML=ids.map(id=>{
     let badge='';
-    if(st.phase==='decide'){const p=planOf(st.day,id); badge=p?(p.rest?'<span class="st rest">休む</span>':'<span class="st ok">提出済み</span>'):'<span class="st wait">考え中…</span>';}
+    if(st.phase==='decide'){const p=planOf(st.day,id); badge=p?(p.rest?(p.promo?'<span class="st rest">休む＋告知</span>':'<span class="st rest">休む</span>'):'<span class="st ok">提出済み</span>'):'<span class="st wait">考え中…</span>';}
     else if(st.phase!=='lobby'){ badge=`<span class="st wait">${yen(tstate(id).cash)}</span>`; }
     return `<li><span class="nm">${tname(id)}</span>${badge}${st.phase==='lobby'?`<button data-kick="${id}" aria-label="${tname(id)}を外す">×</button>`:''}</li>`;
   }).join('')||'<li style="font-weight:400;color:var(--sub)">まだ誰も参加していません</li>';
@@ -867,14 +1014,15 @@ async function openShop(n,total){
   teamIds().forEach(id=>{
     let ts=Object.assign({cash:START_CASH,rep:1},(data.teamState||{})[id]||{});
     for(let k=0;k<day;k++){ if(!resOf(k,id)){ up[`results/${id}/d${k}`]=restRecord(DEF_PLAN,k,ts.rep,{noPlan:'late'}).r; } }
+    const bst=ts.boost>1?ts.boost:1;
     const raw=planOf(day,id); let o;
-    if(!raw) o=restRecord(DEF_PLAN,day,ts.rep,{noPlan:'time'});
+    if(!raw) o=restRecord(DEF_PLAN,day,ts.rep,{noPlan:'time'},bst);
     else { const pl=sanitize(raw);
-      if(raw.rest) o=restRecord(pl,day,ts.rep);
-      else if(costOf(pl).total>ts.cash) o=restRecord(pl,day,ts.rep,{noPlan:'cash'});
-      else o=runDay(pl,day,ts.rep); }
+      if(raw.rest){ const promo=!!raw.promo && day<DAYS.length-1 && ts.cash>=PROMO_COST; o=restRecord(pl,day,ts.rep,promo?{promo:true}:null,bst); }
+      else if(costOf(pl).total>ts.cash) o=restRecord(pl,day,ts.rep,{noPlan:'cash'},bst);
+      else o=runDay(pl,day,ts.rep,bst); }
     up[`results/${id}/d${day}`]=o.r;
-    newTs[id]={cash:ts.cash+o.delta, rep:o.rep};
+    newTs[id]={cash:ts.cash+o.delta, rep:o.rep, boost:o.boost||1, day};
   });
   const arr=Object.entries(newTs).sort((a,b)=>b[1].cash-a[1].cash);
   let rank=0,prev=null; arr.forEach(([id,t],i)=>{ if(t.cash!==prev){rank=i+1;prev=t.cash;} t.rank=rank; t.of=arr.length; up[`teamState/${id}`]=t; });
@@ -931,10 +1079,25 @@ function downloadCSV(){
   const head=['班','日','予報','予報気温','実際の天気','気温','休業','場所','価格','仕入れ','アルバイト','宣伝','来客数','販売数','売り逃し','売れ残り','売上','費用','利益','所持金'];
   const lines=[head];
   teamIds().forEach(id=>{ let cash=START_CASH; for(let k=0;k<DAYS.length;k++){ const r=resOf(k,id); if(!r) continue; cash+=r.profit;
-    lines.push([((H.data.teams||{})[id]||{}).name||'',k+1,r.fc,r.fcT,r.weather,r.t,r.closed?'休業':'',r.closed?'':LOCS[r.loc].name,r.closed?'':r.price,r.stock,r.staff,r.closed?'':ADS[r.ad].label,r.demand,r.sold,r.lost,r.waste,r.revenue,r.cost.total,r.profit,cash]); } });
+    lines.push([((H.data.teams||{})[id]||{}).name||'',k+1,r.fc,r.fcT,r.weather,r.t,r.closed?(r.promo?'休業+SNS告知':'休業'):'',r.closed?'':LOCS[r.loc].name,r.closed?'':r.price,r.stock,r.staff,r.closed?'':ADS[r.ad].label,r.demand,r.sold,r.lost,r.waste,r.revenue,r.cost.total,r.profit,cash]); } });
   const csv='\ufeff'+lines.map(l=>l.map(v=>{v=String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(',')).join('\r\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download=`アイス屋さん_ルーム${H.room}.csv`; document.body.appendChild(a); a.click(); a.remove();
 }
+
+/* ---------- projector helpers ---------- */
+function drawQR(url){
+  const el=$('hQR'); if(!el) return;
+  if(typeof qrcode!=='function'){ el.parentElement.classList.add('hidden'); return; }
+  try{ const q=qrcode(0,'M'); q.addData(url); q.make(); el.innerHTML=q.createSvgTag({cellSize:8,margin:2,scalable:true}); }
+  catch(e){ el.parentElement.classList.add('hidden'); }
+}
+function fitScreen(){ const z=Math.max(0.8,Math.min(1.7,window.innerWidth/1280,window.innerHeight/800)); document.body.style.zoom=z; }
+window.addEventListener('resize',fitScreen); fitScreen();
+$('hFull').addEventListener('click',()=>{
+  if(document.fullscreenElement) document.exitFullscreen&&document.exitFullscreen();
+  else if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
+});
+document.addEventListener('fullscreenchange',()=>{$('hFull').textContent=document.fullscreenElement?'⛶ 全画面を終了':'⛶ 全画面';});
 
 })();
 </script>

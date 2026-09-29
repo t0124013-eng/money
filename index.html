@@ -244,6 +244,20 @@ body.tut-open{overflow:hidden}
 .rest-box{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--bg);border-radius:14px;padding:12px 14px!important;margin-top:10px;border-bottom:none!important}
 .rest-box p{margin:0;font-size:14px;flex:1;min-width:220px}
 .btn-rest{min-width:230px;background:var(--panel);color:var(--ink);border:2px solid var(--sub);padding:12px 16px;font-size:16px}
+.rest-btns{display:flex;flex-direction:column;gap:8px;min-width:250px}
+.rest-card{max-width:620px}
+.rest-choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rest-choice{display:flex;flex-direction:column;align-items:center;gap:4px;border:3px solid var(--line);background:var(--panel);color:var(--ink);border-radius:18px;padding:16px 10px;font-size:16px;text-align:center}
+.rest-choice.promo{border-color:var(--mint);background:var(--mint-soft)}
+.rest-choice:disabled{opacity:.45}
+.rc-ic{font-size:40px;line-height:1}
+.rest-choice b{font-family:"Zen Maru Gothic",sans-serif;font-size:19px}
+.rc-cost{font-weight:700;font-size:22px;font-variant-numeric:tabular-nums}
+.rest-choice small{color:var(--sub);font-size:13px;line-height:1.5}
+.rest-warn{min-height:1.2em;margin:10px 0 4px!important;font-size:14px}
+@media(max-width:520px){.rest-choices{grid-template-columns:1fr}}
+.btn-rest.promo{border-color:var(--mint);color:var(--mint)}
+.boost-banner{margin-top:8px;background:var(--mint-soft);border-left:6px solid var(--mint);padding:8px 14px;border-radius:8px;font-weight:700}
 .btn-rest.armed{border-color:var(--berry);color:var(--berry);background:var(--berry-soft)}
 .stamp.rest{color:#6B7280}
 .rest-title{text-align:center;font-size:22px;margin:10px 0}
@@ -492,7 +506,7 @@ table.rp-t tr.rp-total td{font-weight:700;background:#FFF4CF}
       <div class="mode-body">
         <p class="mode-tag">🏫 クラスのみんなと</p>
         <h2>クラス対戦</h2>
-        <p class="mode-desc">先生の合図で全員いっしょに1日ずつ進みます。ルーム番号は先生の画面に出ています。</p>
+        <p class="mode-desc">先生の合図で全員いっしょに1日ずつ進みます。ルールは先生が説明します。ルーム番号は先生の画面に出ています。</p>
         <div class="join-grid">
           <div><label class="name" for="inRoom">ルーム番号（4けた）</label>
           <input type="text" id="inRoom" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="例：1234" autocomplete="off"></div>
@@ -511,9 +525,8 @@ table.rp-t tr.rp-total td{font-weight:700;background:#FFF4CF}
   <div class="lobby">
     <div class="lobby-ill" aria-hidden="true">🍦</div>
     <h2 id="lbTitle">参加しました！</h2>
-    <p id="lbText">先生が「スタート」を押すまで、少し待ってね。</p>
+    <p id="lbText">先生が「スタート」を押すまで、少し待ってね。<br>待っているあいだに、班で店長・計算係などの役割を決めておこう。</p>
     <div class="lobby-info"><span>ルーム <b id="lbRoom">----</b></span><span>班 <b id="lbTeam">-</b></span></div>
-    <div class="actions" style="justify-content:center"><button class="btn btn-sub" id="lbRules">ルールをもう一度見る</button></div>
     <p class="conn" id="lbConn"></p>
   </div>
 </section>
@@ -525,6 +538,7 @@ table.rp-t tr.rp-total td{font-weight:700;background:#FFF4CF}
     <div class="forecast"><span class="ic" id="dFcIcon">☀️</span><span>天気予報：<b id="dFcText">晴れ</b>　最高気温 <b id="dFcTemp">28</b>℃</span></div>
   </div>
   <div class="news hidden" id="dNews"></div>
+  <div class="boost-banner hidden" id="dBoost">📣 きのうのSNS告知の効果で、今日はお客さんが約1.3倍になります！</div>
   <div class="timer hidden" id="dTimer"></div>
   <div class="submitted hidden" id="dSubmitted">
     <div><b>✅ 作戦を提出しました</b><span id="dSubText"></span><small>先生が「営業開始」を押すまで待ってね。</small></div>
@@ -570,8 +584,8 @@ table.rp-t tr.rp-total td{font-weight:700;background:#FFF4CF}
         <div class="adopts" id="adOpts"></div>
       </div>
       <div class="ctrl c-rest rest-box hidden" id="restBox">
-        <p>☔ 雨の予報です。今日はお店を休むこともできます。<br>お金は1円もかからないけど、売上も0円です。</p>
-        <button class="btn btn-rest" id="btnRest">☂️ 今日はお店を休む</button>
+        <p>☔ 雨の予報です。今日はお店を休むこともできます（売上は0円）。<br><span id="promoNote">休む日は、<b>SNSでお店を告知</b>して次の日のお客さんを増やすこともできます。</span></p>
+        <div class="rest-btns"><button class="btn btn-rest" id="btnRest">☂️ 今日はお店を休む</button></div>
       </div>
     </div>
 
@@ -708,6 +722,18 @@ table.rp-t tr.rp-total td{font-weight:700;background:#FFF4CF}
 </section>
 
 </main>
+<div class="modal hidden" id="restModal" role="dialog" aria-modal="true" aria-labelledby="restTitle">
+  <div class="modal-card rest-card">
+    <h2 id="restTitle">☂️ 今日はお店を休みます</h2>
+    <p id="restLead">休んでいるあいだに、SNSでお店を告知しますか？</p>
+    <div class="rest-choices">
+      <button class="rest-choice promo" id="rcPromo"><span class="rc-ic">📣</span><b>SNSで告知する</b><span class="rc-cost">3,000円</span><small>次の日のお客さんが<br>約1.3倍になる</small></button>
+      <button class="rest-choice" id="rcRest"><span class="rc-ic">😴</span><b>告知しないで休む</b><span class="rc-cost">0円</span><small>お金はかからない<br>次の日はいつもどおり</small></button>
+    </div>
+    <p class="rest-warn" id="restWarn"></p>
+    <div class="modal-actions"><button class="btn btn-sub" id="rcCancel">やっぱり営業する</button></div>
+  </div>
+</div>
 <div class="modal hidden" id="homeModal" role="dialog" aria-modal="true" aria-labelledby="homeTitle">
   <div class="modal-card">
     <h2 id="homeTitle">ゲームを中断しますか？</h2>
@@ -824,7 +850,7 @@ table.rp-t tr.rp-total td{font-weight:700;background:#FFF4CF}
      <div class="five-card"><i><svg viewBox="0 0 48 48"><path d="M6 19h8l18-11v30L14 27H6z" fill="#D93A55" stroke="#1F2A44" stroke-width="2.5" stroke-linejoin="round"/><rect x="12" y="27" width="6" height="12" rx="2" fill="#1F2A44"/>
  <path d="M37 16q5 7 0 14M41 11q9 12 0 24" stroke="#1F2A44" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg></i><b>宣伝</b><p>チラシ 2,000円<br>SNS広告 5,000円</p><span>お金をかけると<br>お客さんが増える</span></div>
     </div>
-       <p class="s-note">☂️ 雨の予報の日は<b>「今日はお店を休む」</b>も選べます。お金は1円もかからないけど、売上も0円です。</p>
+       <p class="s-note">☂️ 雨の予報の日は<b>お店を休む</b>こともできます。休むときに<b>SNSで告知</b>（3,000円）を選ぶと、次の日のお客さんが約1.3倍に！</p>
    </section>
 
    <section class="slide">
@@ -940,6 +966,7 @@ const LOCS=[
   {name:'商店街', ic:'🏪', rent:3000, m:1.0, el:200, rain:1.0, desc:'人通りはふつう。天気の影響もふつう。'},
   {name:'家の前', ic:'🏠', rent:0, m:0.5, el:160, rain:1.4, desc:'場所代は0円。お客さんは少なく値段にきびしいが、近所の常連さんは雨でも来てくれる。'}
 ];
+const PROMO_COST=3000, PROMO_BOOST=1.3;
 const ADS=[
   {cost:0, m:1.0, label:'なし', sub:'0円'},
   {cost:2000, m:1.25, label:'チラシ', sub:'2,000円'},
@@ -953,7 +980,7 @@ const tempF=t=>Math.max(0.2,Math.min(2.0,0.4+(t-18)*0.08));
 
 let S;
 function reset(){
-  S={name:'', cash:START_CASH, rep:1.0, day:0, hist:[], d:{loc:1, price:300, stock:80, staff:1, ad:0}};
+  S={name:'', cash:START_CASH, rep:1.0, boost:1, day:0, hist:[], d:{loc:1, price:300, stock:80, staff:1, ad:0}};
 }
 reset();
 
@@ -1013,6 +1040,9 @@ function renderDecide(){
   $('dFcText').textContent=day.fc;
   $('dFcTemp').textContent=day.fcT;
   $('restBox').classList.toggle('hidden',day.fc!=='雨'); resetRest();
+  const lastDay=S.day>=DAYS.length-1;
+  $('promoNote').classList.toggle('hidden',lastDay);
+  $('dBoost').classList.toggle('hidden',!(S.boost>1));
   $('dNews').textContent=day.news; $('dNews').classList.toggle('hidden',!day.news);
   renderStatus(); updatePlan(); show('scDecide');
 }
@@ -1032,11 +1062,12 @@ document.addEventListener('click',e=>{
 
 /* ---------- simulate ---------- */
 /*CORE-RUN-START*/
-function runDay(d,di,rep){
+function runDay(d,di,rep,boost){
+  boost=boost||1;
   const day=DAYS[di], w=WEATHER[day.act], L=LOCS[d.loc];
   const priceF=Math.exp(-(d.price-BASE_PRICE)/L.el);
   const locF=L.m*(day.act==='雨'?L.rain:1);
-  const demand=Math.max(0,Math.round(BASE*priceF*tempF(day.t)*w.m*day.ev*ADS[d.ad].m*rep*locF));
+  const demand=Math.max(0,Math.round(BASE*priceF*tempF(day.t)*w.m*day.ev*ADS[d.ad].m*rep*locF*boost));
   const cap=OWNER_CAP+d.staff*STAFF_CAP;
   const sold=Math.min(demand,d.stock,cap);
   const c=costOf(d), revenue=sold*d.price, profit=revenue-c.total;
@@ -1046,26 +1077,27 @@ function runDay(d,di,rep){
   if(demand>0 && lost/demand>0.2) nrep=Math.max(0.7,+(rep-0.1).toFixed(2));
   else if(lost===0 && demand>0) nrep=Math.min(1.2,+(rep+0.05).toFixed(2));
   const r={day:di+1, weather:day.act, fc:day.fc, t:day.t, fcT:day.fcT, loc:d.loc, price:d.price, stock:d.stock, staff:d.staff, ad:d.ad,
-    demand, sold, lost, waste, revenue, cost:c, profit, lostByStock, lostByCap, repBefore:rep, repAfter:nrep, cap};
-  return {r, delta:profit, rep:nrep};
+    demand, sold, lost, waste, revenue, cost:c, profit, lostByStock, lostByCap, repBefore:rep, repAfter:nrep, cap, boosted:boost>1};
+  return {r, delta:profit, rep:nrep, boost:1};
 }
-function restRecord(d,di,rep,extra){
-  const day=DAYS[di], est=runDay(d,di,rep).r;
+function restRecord(d,di,rep,extra,boost){
+  const day=DAYS[di], est=runDay(d,di,rep,boost).r, promo=!!(extra&&extra.promo), pc=promo?PROMO_COST:0;
   const r=Object.assign({day:di+1, weather:day.act, fc:day.fc, t:day.t, fcT:day.fcT, closed:true, loc:d.loc,
     price:0, stock:0, staff:0, ad:0, demand:0, sold:0, lost:0, waste:0, revenue:0,
-    cost:{mat:0,staff:0,ad:0,rent:0,total:0}, profit:0, repBefore:rep, repAfter:rep,
+    cost:{mat:0,staff:0,ad:pc,rent:0,total:pc}, profit:-pc, repBefore:rep, repAfter:rep,
     ifPlan:{loc:d.loc,price:d.price,stock:d.stock,staff:d.staff,ad:d.ad}, ifDemand:est.demand, ifProfit:est.profit}, extra||{});
-  return {r, delta:0, rep};
+  return {r, delta:-pc, rep, boost:promo?PROMO_BOOST:1};
 }
 /*CORE-RUN-END*/
-function restDay(){
-  const o=restRecord(S.d,S.day,S.rep); S.hist.push(o.r); return o.r;
+function restDay(promo){
+  const o=restRecord(S.d,S.day,S.rep,promo?{promo:true}:null,S.boost); S.cash+=o.delta; S.boost=o.boost; S.hist.push(o.r); return o.r;
 }
 function simulate(){
-  const o=runDay(S.d,S.day,S.rep); S.rep=o.rep; S.cash+=o.delta; S.hist.push(o.r); return o.r;
+  const o=runDay(S.d,S.day,S.rep,S.boost); S.rep=o.rep; S.cash+=o.delta; S.boost=o.boost; S.hist.push(o.r); return o.r;
 }
 function feedback(r){
   const f=[];
+  if(r.boosted) f.push(`きのうのSNS告知の効果で、お客さんが約${PROMO_BOOST}倍に増えました。`);
   if(r.profit<0) f.push('赤字でした。売上より、かかったお金のほうが多かったということです。');
   if(r.waste>=20) f.push(`${r.waste}個が売れ残って廃棄。材料費${yen(r.waste*unitCost(r.stock))}がむだになりました。仕入れすぎかも？`);
   if(r.lostByStock) f.push(`材料が足りず、${r.lost}人が買えずに帰りました。もっと仕入れていれば売上は増えたかも。`);
@@ -1123,10 +1155,10 @@ function renderClosed(r){
     <hr>
     <div class="rest-title">本日はお休みしました</div>
     <div class="row"><span>売上</span><span>0円</span></div>
-    <div class="row"><span>かかったお金</span><span>0円</span></div>
+    ${r.promo?`<div class="row"><span>SNSで告知</span><span class="neg">−${yen(PROMO_COST)}</span></div>`:'<div class="row"><span>かかったお金</span><span>0円</span></div>'}
     <hr>
     <div class="row"><span>今日の利益</span></div>
-    <div class="big">±0円</div>
+    <div class="big ${r.promo?'neg':''}">${r.promo?'−'+yen(PROMO_COST):'±0円'}</div>
     <hr>
     <div class="c">所持金 ${yen(S.cash)}</div>`;
   $('rPanelTitle').textContent='もし営業していたら…';
@@ -1139,6 +1171,7 @@ function renderClosed(r){
   if(ip>0) f.push(`営業していれば、約${yen(ip)}の利益が出ていたかもしれません。休めば損はしないけれど、もうけのチャンスも0円になります。`);
   else f.push(`営業していたら約${yen(-ip)}の赤字でした。休んだのは正解です！`);
   if(r.fc!==r.weather||Math.abs(r.t-r.fcT)>=2) f.push(`予報は「${r.fc}・${r.fcT}℃」でしたが、実際は「${r.weather}・${r.t}℃」。予報は外れることもあります。`);
+  if(r.promo) f.push(`SNSで告知したので、明日はお客さんが約${PROMO_BOOST}倍に増えます。明日は仕入れとアルバイトを多めに準備しよう！`);
   f.push('休んだ日は、お店の評判は変わりません。');
   $('rFeedback').innerHTML=f.map(t=>`<li>${t}</li>`).join('');
   renderStatus(); show('scResult');
@@ -1163,7 +1196,7 @@ function chart(){
   s+=`<text x="${pad-6}" y="${zero+4}" text-anchor="end" font-size="12" fill="var(--sub)">0</text>`;
   vals.forEach((v,i)=>{
     const h=Math.abs(v)*scale, x=pad+i*bw+bw*0.2, y=v>=0?zero-h:zero;
-    if(S.hist[i].closed){ s+=`<text x="${x+bw*0.3}" y="${zero-8}" text-anchor="middle" font-size="14" fill="var(--sub)">☂️ 休業</text>`; }
+    if(S.hist[i].closed){ s+=`<text x="${x+bw*0.3}" y="${zero-8}" text-anchor="middle" font-size="14" fill="var(--sub)">${S.hist[i].promo?'📣 休業・告知':'☂️ 休業'}</text>`; }
     else{
     s+=`<rect x="${x}" y="${y}" width="${bw*0.6}" height="${Math.max(h,1)}" rx="6" fill="${v>=0?'var(--mint)':'var(--berry)'}"/>`;
     s+=`<text x="${x+bw*0.3}" y="${v>=0?y-6:y+h+16}" text-anchor="middle" font-size="13" fill="var(--ink)">${(v>=0?'+':'−')+Math.abs(v).toLocaleString('ja-JP')}</text>`;
@@ -1190,6 +1223,8 @@ function analyze(){
   const good=[], next=[];
   const missed=closed.filter(x=>x.ifProfit>0).sort((a,b)=>b.ifProfit-a.ifProfit)[0];
   const saved=closed.filter(x=>x.ifProfit<=0).sort((a,b)=>a.ifProfit-b.ifProfit)[0];
+  const promoOk=h.find((x,i)=>x.promo&&h[i+1]&&h[i+1].boosted&&!h[i+1].closed&&h[i+1].profit>PROMO_COST);
+  if(promoOk) good.push(`${promoOk.day}日目は休んでSNSで告知し、次の日のお客さんを増やして${yen(h[promoOk.day].profit)}の利益につなげました。`);
   if(saved) good.push(`${saved.day}日目は「${saved.fc}」の予報でお店を休み、約${yen(-saved.ifProfit)}の赤字をさけました。`);
   if(missed) next.push(`${missed.day}日目は「${missed.fc}」の予報で休みましたが、実際は${missed.weather}・${missed.t}℃。営業していれば約${yen(missed.ifProfit)}の利益が出ていたかもしれません。`);
   if(open.length===h.length && open.every(x=>x.profit>=0)) good.push('5日間すべて黒字！ どの日も、かかったお金より多く売り上げることができました。');
@@ -1314,7 +1349,7 @@ function renderFinal(){
   $('fChart').innerHTML=chart();
   renderCorr();
   const head='<tr><th>日</th><th>天気</th><th>気温</th><th>場所</th><th>価格</th><th>仕入れ</th><th>バイト</th><th>宣伝</th><th>客数</th><th>販売</th><th>売り逃し</th><th>売れ残り</th><th>売上</th><th>費用</th><th>利益</th></tr>';
-  $('fTable').innerHTML=head+S.hist.map(h=>h.closed?`<tr><td>${h.day}日目</td><td>${WEATHER[h.weather].ic}${h.weather}</td><td>${h.t}℃</td><td colspan="11" style="text-align:center;color:var(--sub)">☂️ 休業（営業していたら 利益 約${h.ifProfit>=0?'+':'−'}${Math.abs(h.ifProfit).toLocaleString('ja-JP')}円）</td><td>±0円</td></tr>`:`<tr><td>${h.day}日目</td><td>${WEATHER[h.weather].ic}${h.weather}</td><td>${h.t}℃</td><td>${LOCS[h.loc].ic}${LOCS[h.loc].name}</td><td>${h.price}</td><td>${h.stock}</td><td>${h.staff}</td><td>${ADS[h.ad].label}</td><td>${h.demand}</td><td>${h.sold}</td><td>${h.lost}</td><td>${h.waste}</td><td>${yen(h.revenue)}</td><td>${yen(h.cost.total)}</td><td style="font-weight:700;color:${h.profit>=0?'var(--mint)':'var(--berry)'}">${h.profit>=0?'+':''}${yen(h.profit)}</td></tr>`).join('');
+  $('fTable').innerHTML=head+S.hist.map(h=>h.closed?`<tr><td>${h.day}日目</td><td>${WEATHER[h.weather].ic}${h.weather}</td><td>${h.t}℃</td><td colspan="11" style="text-align:center;color:var(--sub)">☂️ 休業${h.promo?'＋📣SNS告知':''}（営業していたら 利益 約${h.ifProfit>=0?'+':'−'}${Math.abs(h.ifProfit).toLocaleString('ja-JP')}円）</td><td>${h.profit<0?yen(h.profit):'±0円'}</td></tr>`:`<tr><td>${h.day}日目</td><td>${WEATHER[h.weather].ic}${h.weather}</td><td>${h.t}℃</td><td>${LOCS[h.loc].ic}${LOCS[h.loc].name}</td><td>${h.price}</td><td>${h.stock}</td><td>${h.staff}</td><td>${ADS[h.ad].label}</td><td>${h.demand}</td><td>${h.sold}</td><td>${h.lost}</td><td>${h.waste}</td><td>${yen(h.revenue)}</td><td>${yen(h.cost.total)}</td><td style="font-weight:700;color:${h.profit>=0?'var(--mint)':'var(--berry)'}">${h.profit>=0?'+':''}${yen(h.profit)}</td></tr>`).join('');
   S.day=DAYS.length; renderStatus(); show('scFinal');
 }
 
@@ -1391,12 +1426,22 @@ $('tutBody').addEventListener('touchend',e=>{
   if(dx<-70 && tutI<slides.length-1){tutI++;renderTut();}
   else if(dx>70 && tutI>0){tutI--;renderTut();}
 });
-let restArm=false, restTimer=null;
-function resetRest(){ restArm=false; clearTimeout(restTimer); const b=$('btnRest'); b.textContent='☂️ 今日はお店を休む'; b.classList.remove('armed'); }
-$('btnRest').addEventListener('click',()=>{
-  if(!restArm){ restArm=true; const b=$('btnRest'); b.textContent='本当に休む？ もう一度押すと休みます'; b.classList.add('armed'); restTimer=setTimeout(resetRest,4000); return; }
-  resetRest(); if(B.on){submitPlan(true);return;} renderResult(restDay());
-});
+function resetRest(){ $('restModal').classList.add('hidden'); }
+function openRest(){
+  const lastDay=S.day>=DAYS.length-1, poor=S.cash<PROMO_COST;
+  $('rcPromo').classList.toggle('hidden',lastDay); $('rcPromo').disabled=poor;
+  $('restLead').textContent=lastDay?'今日は最終日なので、SNSでの告知はできません。お店を休みますか？':'休んでいるあいだに、SNSでお店を告知しますか？';
+  $('restWarn').textContent=(!lastDay&&poor)?'所持金が3,000円より少ないので、告知はできません。':'';
+  $('restModal').classList.remove('hidden'); (lastDay||poor?$('rcRest'):$('rcPromo')).focus();
+}
+function doRest(promo){
+  resetRest(); if(B.on){submitPlan(true,promo);return;} renderResult(restDay(promo));
+}
+$('btnRest').addEventListener('click',openRest);
+$('rcPromo').addEventListener('click',()=>{ if(S.cash<PROMO_COST||S.day>=DAYS.length-1) return; doRest(true); });
+$('rcRest').addEventListener('click',()=>doRest(false));
+$('rcCancel').addEventListener('click',resetRest);
+$('restModal').addEventListener('click',e=>{ if(e.target.id==='restModal') resetRest(); });
 $('btnOpen').addEventListener('click',()=>{ if(costOf(S.d).total>S.cash) return; if(B.on){submitPlan(false);return;} renderResult(simulate()); });
 document.querySelectorAll('[data-next]').forEach(b=>b.addEventListener('click',()=>{
   if(S.day>=DAYS.length-1){renderFinal();return;}
@@ -1485,7 +1530,7 @@ function startBattle(code,id,team){
   B.subs.push(B.db.on(`${R}/results/${id}`,v=>{B.results=v||{};applyBattle();}));
   B.subs.push(B.db.on(`${R}/teamState/${id}`,v=>{B.ts=v;applyBattle();}));
   B.timerInt=setInterval(tickTimer,500);
-  openTut(true);
+  B.shownKey=''; applyBattle();
 }
 function histFromResults(){
   return Object.keys(B.results).filter(k=>/^d\d$/.test(k)&&B.results[k]).sort().map(k=>B.results[k]);
@@ -1493,6 +1538,7 @@ function histFromResults(){
 function syncMoney(){
   S.cash=B.ts&&typeof B.ts.cash==='number'?B.ts.cash:START_CASH;
   S.rep=B.ts&&typeof B.ts.rep==='number'?B.ts.rep:1.0;
+  S.boost=B.ts&&B.ts.boost>1?B.ts.boost:1;
   S.hist=histFromResults();
 }
 function applyBattle(){
@@ -1515,8 +1561,9 @@ function applyBattle(){
       return;
     }
     const key='result'+st.day;
-    if(r && B.shownKey===key){ showRank('rRank'); renderStatus(); }
-    if(r && B.shownKey!==key){B.shownKey=key; S.day=st.day; renderResult(r); showRank('rRank');
+    const tsReady=B.ts&&B.ts.day===st.day;
+    if(r && tsReady && B.shownKey===key){ showRank('rRank'); renderStatus(); }
+    if(r && tsReady && B.shownKey!==key){B.shownKey=key; S.day=st.day; renderResult(r); showRank('rRank');
       document.querySelectorAll('[data-wait]').forEach(w=>{w.classList.remove('hidden');w.textContent=st.day>=DAYS.length-1?'⏳ 先生が最終結果を発表するまで待ってね':'⏳ 先生が次の日に進めるまで待ってね';});}
   }
 }
@@ -1529,7 +1576,7 @@ function renderSubmitted(){
   const locked=!!(B.on&&B.plan);
   $('scDecide').classList.toggle('locked',locked);
   $('dSubmitted').classList.toggle('hidden',!locked);
-  if(locked){const p=B.plan;$('dSubText').textContent=p.rest?'今日はお店を休む':`${LOCS[p.loc].name}・${p.price}円・仕入れ${p.stock}個・アルバイト${p.staff}人・宣伝${ADS[p.ad].label}`;}
+  if(locked){const p=B.plan;$('dSubText').textContent=p.rest?(p.promo?'休んでSNSで告知する（3,000円）':'今日はお店を休む'):`${LOCS[p.loc].name}・${p.price}円・仕入れ${p.stock}個・アルバイト${p.staff}人・宣伝${ADS[p.ad].label}`;}
 }
 function tickTimer(){
   const el=$('dTimer'); if(!B.on||!B.st||B.st.phase!=='decide'||!B.st.deadline){el.classList.add('hidden');return;}
@@ -1537,13 +1584,12 @@ function tickTimer(){
   el.classList.remove('hidden'); el.classList.toggle('low',left<=15);
   el.textContent=left>0?`⏱ のこり ${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`:'⏱ 時間です！';
 }
-function submitPlan(rest){
+function submitPlan(rest,promo){
   if(!B.on||!B.st||B.st.phase!=='decide') return;
   const d=S.d; if(!rest && costOf(d).total>S.cash) return;
-  B.db.set(`rooms/${B.room}/plans/d${B.st.day}/${B.id}`,{loc:d.loc,price:d.price,stock:d.stock,staff:d.staff,ad:d.ad,rest:!!rest,at:Date.now()});
+  B.db.set(`rooms/${B.room}/plans/d${B.st.day}/${B.id}`,{loc:d.loc,price:d.price,stock:d.stock,staff:d.staff,ad:d.ad,rest:!!rest,promo:!!promo,at:Date.now()});
 }
 $('btnUnsubmit').addEventListener('click',()=>{ if(B.on&&B.st&&B.st.phase==='decide') B.db.set(`rooms/${B.room}/plans/d${B.st.day}/${B.id}`,null); });
-$('lbRules').addEventListener('click',()=>openTut(false));
 
 /* ---------- A4 PDF ---------- */
 const dlPromise=(window.claude&&typeof window.claude.use==='function')
@@ -1561,7 +1607,7 @@ function buildReport(){
       <div class="rp-up">${v>=0?`<span>${sgn(v)}</span><i style="height:${bh}px;background:#2E9C7A"></i>`:''}</div>
       <div class="rp-dn">${v<0?`<i style="height:${bh}px;background:#D93A55"></i><span style="color:#C3243F">${sgn(v)}</span>`:''}</div>
       <div class="rp-lbl">${x.day}日目 ${WEATHER[x.weather].ic}${x.t}℃</div></div>`;}).join('');
-  const rows=h.map(x=>x.closed?`<tr><td>${x.day}日目</td><td>${x.weather} ${x.t}℃</td><td colspan="11" style="text-align:center;color:#56627A">休業（営業していたら 利益 約${x.ifProfit>=0?'+':'−'}${Math.abs(x.ifProfit).toLocaleString('ja-JP')}円）</td><td>±0円</td></tr>`:`<tr><td>${x.day}日目</td><td>${x.weather} ${x.t}℃</td><td>${LOCS[x.loc].name}</td><td>${x.price}円</td><td>${x.stock}</td><td>${x.staff}人</td><td>${ADS[x.ad].label}</td><td>${x.demand}</td><td>${x.sold}</td><td>${x.lost}</td><td>${x.waste}</td><td>${yen(x.revenue)}</td><td>${yen(x.cost.total)}</td><td style="color:${x.profit>=0?'#1D8A67':'#C3243F'};font-weight:700">${x.profit>=0?'+':''}${yen(x.profit)}</td></tr>`).join('');
+  const rows=h.map(x=>x.closed?`<tr><td>${x.day}日目</td><td>${x.weather} ${x.t}℃</td><td colspan="11" style="text-align:center;color:#56627A">休業${x.promo?'＋SNS告知':''}（営業していたら 利益 約${x.ifProfit>=0?'+':'−'}${Math.abs(x.ifProfit).toLocaleString('ja-JP')}円）</td><td>${x.profit<0?yen(x.profit):'±0円'}</td></tr>`:`<tr><td>${x.day}日目</td><td>${x.weather} ${x.t}℃</td><td>${LOCS[x.loc].name}</td><td>${x.price}円</td><td>${x.stock}</td><td>${x.staff}人</td><td>${ADS[x.ad].label}</td><td>${x.demand}</td><td>${x.sold}</td><td>${x.lost}</td><td>${x.waste}</td><td>${yen(x.revenue)}</td><td>${yen(x.cost.total)}</td><td style="color:${x.profit>=0?'#1D8A67':'#C3243F'};font-weight:700">${x.profit>=0?'+':''}${yen(x.profit)}</td></tr>`).join('');
   const total=`<tr class="rp-total"><td>合計</td><td></td><td></td><td></td><td>${sum(x=>x.stock)}</td><td></td><td></td><td>${sum(x=>x.demand)}</td><td>${sum(x=>x.sold)}</td><td>${sum(x=>x.lost)}</td><td>${sum(x=>x.waste)}</td><td>${yen(totRev)}</td><td>${yen(totCost)}</td><td>${p>=0?'+':''}${yen(p)}</td></tr>`;
   const qs=[...document.querySelectorAll('.qs li')].map((li,i)=>{
     const q=li.childNodes[0].textContent.trim(), a=li.querySelector('textarea').value.trim();
